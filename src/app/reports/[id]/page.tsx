@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowLeft, MapPin, ShieldCheck } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft, Camera, MapPin, ShieldCheck } from "lucide-react";
 import { notFound } from "next/navigation";
 import { requireAuthenticatedContext } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
@@ -10,6 +11,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Alert } from "@/components/ui/Alert";
 import { Textarea } from "@/components/ui/FormField";
 import { Button } from "@/components/ui/Button";
+import { ResolutionEvidenceUploader } from "@/components/incidents/ResolutionEvidenceUploader";
 
 export const metadata = { title: "Campus Report" };
 
@@ -18,7 +20,13 @@ export default async function ReportDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ submitted?: string; verified?: string; error?: string }>;
+  searchParams: Promise<{
+    submitted?: string;
+    verified?: string;
+    error?: string;
+    media_error?: string;
+    timeline_error?: string;
+  }>;
 }) {
   const { id } = await params;
   const query = await searchParams;
@@ -33,7 +41,7 @@ export default async function ReportDetailPage({
     .single();
   if (!incident) notFound();
 
-  const [updatesResult, verificationsResult, existingVerificationResult] = await Promise.all([
+  const [updatesResult, verificationsResult, existingVerificationResult, imagesResult] = await Promise.all([
     supabase
       .from("incident_updates")
       .select("id, title, message, new_status, created_at")
@@ -49,17 +57,55 @@ export default async function ReportDetailPage({
       .eq("incident_id", id)
       .eq("user_id", ctx.userId)
       .maybeSingle(),
+    supabase
+      .from("incident_images")
+      .select("id, storage_path, image_type, mime_type")
+      .eq("incident_id", id)
+      .order("created_at", { ascending: true }),
   ]);
 
   const updates = updatesResult.data ?? [];
   const verifications = verificationsResult.data ?? [];
   const alreadyVerified = Boolean(existingVerificationResult.data);
   const isOwner = incident.reporter_id === ctx.userId;
+  if (imagesResult.error) {
+    console.error("Incident image metadata query failed:", imagesResult.error);
+  }
+  const imageResults = await Promise.all(
+    (imagesResult.data ?? []).map(async (image) => {
+      const { data, error } = await supabase.storage
+        .from("incident-evidence")
+        .createSignedUrl(image.storage_path, 60 * 60);
+      if (error || !data) {
+        console.error("Incident image signed URL query failed:", error ?? "No URL returned.");
+        return null;
+      }
+      return { ...image, signedUrl: data.signedUrl };
+    })
+  );
+  const images = imageResults.filter((image): image is NonNullable<typeof image> => image !== null);
+  const evidenceImages = images.filter((image) => image.image_type === "evidence");
+  const resolutionImages = images.filter((image) => image.image_type === "resolution");
 
   return (
     <AppShell profile={ctx.profile} institutionName={ctx.institutionName} pageTitle="Report Details">
       <div style={{ maxWidth: "960px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "16px" }}>
         {query.submitted && <Alert variant="success" title="Report submitted">Your campus report is now visible for community verification.</Alert>}
+        {query.media_error && (
+          <Alert variant="warning" title="Report saved, but photos could not be attached">
+            Your report is safe. Please contact campus support to add the photos, or try submitting them again later.
+          </Alert>
+        )}
+        {query.timeline_error && (
+          <Alert variant="warning" title="Timeline update unavailable">
+            The report was saved, but its submission event could not be recorded. Contact support if this persists.
+          </Alert>
+        )}
+        {imagesResult.error && (
+          <Alert variant="warning" title="Report photos could not be loaded">
+            Refresh the page to try again.
+          </Alert>
+        )}
         {query.verified && <Alert variant="success" title="Thank you">Your community verification was recorded.</Alert>}
         {query.error && <Alert variant="danger" title="Verification unavailable">{query.error}</Alert>}
 
@@ -91,6 +137,67 @@ export default async function ReportDetailPage({
             <span>{verifications.length} community verification{verifications.length === 1 ? "" : "s"}</span>
           </div>
         </Card>
+
+        {(evidenceImages.length > 0 || resolutionImages.length > 0) && (
+          <Card>
+            <h3 style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "16px", marginBottom: "14px" }}>
+              <Camera size={17} />
+              Repair evidence
+            </h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "18px" }}>
+              {evidenceImages.length > 0 && (
+                <section>
+                  <h4 style={{ fontSize: "13px", marginBottom: "9px" }}>Photos submitted with report</h4>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: "8px" }}>
+                    {evidenceImages.map((image) => (
+                      <a key={image.id} href={image.signedUrl} target="_blank" rel="noreferrer">
+                        <Image
+                          src={image.signedUrl}
+                          alt="Student-submitted evidence"
+                          width={320}
+                          height={240}
+                          unoptimized
+                          style={{ width: "100%", height: "130px", objectFit: "cover", borderRadius: "8px" }}
+                        />
+                      </a>
+                    ))}
+                  </div>
+                </section>
+              )}
+              {resolutionImages.length > 0 && (
+                <section>
+                  <h4 style={{ fontSize: "13px", marginBottom: "9px" }}>Repair completion photos</h4>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: "8px" }}>
+                    {resolutionImages.map((image) => (
+                      <a key={image.id} href={image.signedUrl} target="_blank" rel="noreferrer">
+                        <Image
+                          src={image.signedUrl}
+                          alt="Campus repair completion evidence"
+                          width={320}
+                          height={240}
+                          unoptimized
+                          style={{ width: "100%", height: "130px", objectFit: "cover", borderRadius: "8px" }}
+                        />
+                      </a>
+                    ))}
+                  </div>
+                </section>
+              )}
+            </div>
+          </Card>
+        )}
+
+        {incident.status === "resolved" &&
+          (ctx.profile.role === "campus_admin" || ctx.profile.role === "super_admin") && (
+            <Card>
+              <h3 style={{ fontSize: "16px", marginBottom: "10px" }}>Add repair completion evidence</h3>
+              <ResolutionEvidenceUploader
+                incidentId={id}
+                universityId={incident.university_id}
+                userId={ctx.userId}
+              />
+            </Card>
+          )}
 
         {!isOwner && incident.status !== "resolved" && incident.status !== "rejected" && (
           <Card>

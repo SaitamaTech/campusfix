@@ -44,7 +44,18 @@ export default async function ReportPage({
         {params.error && (
           <Alert variant="danger" title="Report could not be submitted">{params.error}</Alert>
         )}
-        <IncidentReportForm categories={categories} locations={locations} />
+        {ctx.profile.university_id ? (
+          <IncidentReportForm
+            categories={categories}
+            locations={locations}
+            universityId={ctx.profile.university_id}
+            userId={ctx.userId}
+          />
+        ) : (
+          <Alert variant="warning" title="Campus assignment required">
+            Your account needs an assigned campus before you can submit a report.
+          </Alert>
+        )}
       </div>
     </AppShell>
   );

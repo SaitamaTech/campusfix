@@ -23,6 +23,8 @@ Run the migration scripts in order inside the Supabase **SQL Editor** (or via `s
 5. `supabase/migrations/0005_dashboard_metrics.sql` — Adds student and campus dashboard metric functions.
 6. `supabase/migrations/0006_super_admin_dashboard.sql` — Adds platform dashboard metrics and recent report data.
 7. `supabase/migrations/0007_admin_controls_and_announcements.sql` — Adds platform announcements, campus-scoped operations metrics, and audited Super Admin account role/status controls.
+8. `supabase/migrations/0008_report_media_integrity.sql` — Restricts report image metadata to report owners and authorized resolution uploads, and extends secure campus-scoped storage uploads.
+9. `supabase/migrations/0009_incident_workflow.sql` — Adds the reopened lifecycle status, admin submission notifications, and an atomic campus-scoped RPC for report status changes, department assignments, and internal notes.
 
 The admin console also provides department and location management and campus settings. Announcements are readable by authenticated users; only Super Admins can publish them or manage accounts. Apply all migrations in filename order before deploying the matching application code.
 

@@ -9,7 +9,8 @@ export type IncidentStatus =
   | "assigned"
   | "in_progress"
   | "resolved"
-  | "rejected";
+  | "rejected"
+  | "reopened";
 
 export type VerificationType =
   | "confirm_exists"

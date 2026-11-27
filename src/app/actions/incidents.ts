@@ -5,12 +5,13 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAuthenticatedContext, requireRole } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
-import type { IncidentStatus } from "@/types/database";
 
 export interface IncidentActionState {
   status: "idle" | "error" | "success";
   message?: string;
   fieldErrors?: Record<string, string>;
+  incidentId?: string;
+  timelineError?: boolean;
 }
 
 const submitSchema = z.object({
@@ -21,7 +22,7 @@ const submitSchema = z.object({
   customLocation: z.string().trim().max(160).optional(),
   building: z.string().trim().max(160).optional(),
   severity: z.enum(["low", "medium", "high", "critical"]),
-  observedAt: z.string().min(1),
+  observedAt: z.string().min(1).refine((value) => Number.isFinite(Date.parse(value))),
   additionalInfo: z.string().trim().max(1000).optional(),
   latitude: z.string().optional(),
   longitude: z.string().optional(),
@@ -69,9 +70,47 @@ export async function submitIncidentAction(
   }
 
   const data = parsed.data;
-  const referenceCode = `CFX-${new Date().getFullYear()}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
   const latitude = data.latitude ? Number(data.latitude) : null;
   const longitude = data.longitude ? Number(data.longitude) : null;
+  if (
+    (latitude === null) !== (longitude === null) ||
+    (latitude !== null && (!Number.isFinite(latitude) || latitude < -90 || latitude > 90)) ||
+    (longitude !== null && (!Number.isFinite(longitude) || longitude < -180 || longitude > 180))
+  ) {
+    return {
+      status: "error",
+      message: "Please provide a valid latitude and longitude together.",
+      fieldErrors: { latitude: "Enter both coordinates within valid ranges." },
+    };
+  }
+
+  const { data: category, error: categoryError } = await supabase
+    .from("incident_categories")
+    .select("id")
+    .eq("id", data.categoryId)
+    .eq("is_active", true)
+    .or(`university_id.is.null,university_id.eq.${ctx.profile.university_id}`)
+    .maybeSingle();
+  if (categoryError || !category) {
+    if (categoryError) console.error("Incident category validation failed:", categoryError);
+    return { status: "error", message: "Choose an active category for your campus." };
+  }
+
+  if (data.locationId) {
+    const { data: location, error: locationError } = await supabase
+      .from("campus_locations")
+      .select("id")
+      .eq("id", data.locationId)
+      .eq("university_id", ctx.profile.university_id)
+      .eq("is_active", true)
+      .maybeSingle();
+    if (locationError || !location) {
+      if (locationError) console.error("Incident location validation failed:", locationError);
+      return { status: "error", message: "Choose an active location for your campus." };
+    }
+  }
+
+  const referenceCode = `CFX-${new Date().getFullYear()}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
 
   const { data: incident, error } = await supabase
     .from("incidents")
@@ -104,7 +143,7 @@ export async function submitIncidentAction(
     return { status: "error", message: error?.message || "Could not submit the report." };
   }
 
-  await supabase.from("incident_updates").insert({
+  const { error: timelineError } = await supabase.from("incident_updates").insert({
     incident_id: incident.id,
     university_id: ctx.profile.university_id,
     actor_id: ctx.userId,
@@ -116,11 +155,19 @@ export async function submitIncidentAction(
     message: "The campus report was submitted for community verification and review.",
     is_internal: false,
   });
+  if (timelineError) {
+    console.error("Initial incident timeline insert failed:", timelineError);
+  }
 
   revalidatePath("/dashboard");
   revalidatePath("/explore");
   revalidatePath("/my-reports");
-  redirect(`/reports/${incident.id}?submitted=1`);
+  return {
+    status: "success",
+    message: "Report submitted. Preparing your photos...",
+    incidentId: incident.id,
+    timelineError: Boolean(timelineError),
+  };
 }
 
 export async function verifyIncidentAction(formData: FormData): Promise<void> {
@@ -149,48 +196,57 @@ export async function verifyIncidentAction(formData: FormData): Promise<void> {
 }
 
 export async function updateIncidentStatusAction(formData: FormData): Promise<void> {
-  await requireRole(["campus_admin", "super_admin"]);
+  await requireRole(["campus_admin", "super_admin"], { includeUniversity: false });
   const supabase = await createClient();
-  const incidentId = String(formData.get("incidentId") ?? "");
-  const status = String(formData.get("status") ?? "") as IncidentStatus;
-  const resolution = String(formData.get("resolution") ?? "").trim();
-  const allowed: IncidentStatus[] = ["under_review", "approved", "assigned", "in_progress", "resolved", "rejected"];
-  if (!supabase || !incidentId || !allowed.includes(status)) redirect("/admin/reports");
+  const campusId = z.string().uuid().safeParse(formData.get("universityId"));
+  const campusQuery = campusId.success ? `&universityId=${campusId.data}` : "";
+  const parsed = z.object({
+    incidentId: z.string().uuid(),
+    status: z.enum([
+      "submitted",
+      "under_review",
+      "approved",
+      "assigned",
+      "in_progress",
+      "resolved",
+      "rejected",
+      "reopened",
+    ]),
+    resolution: z.string().trim().max(2000),
+    departmentId: z.string().uuid().optional().or(z.literal("")),
+    assignedToName: z.string().trim().max(120),
+    assignmentNotes: z.string().trim().max(500),
+    internalNote: z.string().trim().max(2000),
+  }).safeParse({
+    incidentId: formData.get("incidentId"),
+    status: formData.get("status"),
+    resolution: formData.get("resolution") ?? "",
+    departmentId: formData.get("departmentId") ?? "",
+    assignedToName: formData.get("assignedToName") ?? "",
+    assignmentNotes: formData.get("assignmentNotes") ?? "",
+    internalNote: formData.get("internalNote") ?? "",
+  });
 
-  const ctx = await requireAuthenticatedContext();
-  const { data: existing } = await supabase
-    .from("incidents")
-    .select("status, university_id")
-    .eq("id", incidentId)
-    .single();
-  if (!existing) redirect("/admin/reports");
-
-  const update: Record<string, unknown> = { status };
-  if (status === "resolved") {
-    update.resolution_description = resolution || "Issue resolved and documented.";
-    update.resolved_at = new Date().toISOString();
-    update.resolved_by = ctx.userId;
+  if (!supabase || !parsed.success) {
+    redirect(`/admin/reports?error=invalid_update${campusQuery}`);
   }
-  if (status === "rejected") update.rejection_reason = resolution || "Report rejected after review.";
 
-  const { error } = await supabase.from("incidents").update(update).eq("id", incidentId);
-  if (!error) {
-    await supabase.from("incident_updates").insert({
-      incident_id: incidentId,
-      university_id: existing.university_id,
-      actor_id: ctx.userId,
-      actor_role: ctx.profile.role,
-      update_type: "status_change",
-      previous_status: existing.status,
-      new_status: status,
-      title: `Status changed to ${status.replace("_", " ")}`,
-      message: resolution || `Campus administration moved this report to ${status.replace("_", " ")}.`,
-      is_internal: false,
-    });
+  const { error } = await supabase.rpc("admin_update_incident_workflow", {
+    target_incident_id: parsed.data.incidentId,
+    requested_status: parsed.data.status,
+    resolution_text: parsed.data.resolution,
+    requested_department_id: parsed.data.departmentId || null,
+    requested_assignee_name: parsed.data.assignedToName,
+    requested_assignment_notes: parsed.data.assignmentNotes,
+    internal_note: parsed.data.internalNote,
+  });
+  if (error) {
+    console.error("Incident workflow update failed:", error);
+    redirect(`/admin/reports?error=workflow_update_failed${campusQuery}`);
   }
 
   revalidatePath("/admin");
   revalidatePath("/admin/reports");
-  revalidatePath(`/reports/${incidentId}`);
-  redirect(`/admin/reports?${error ? `error=${encodeURIComponent(error.message)}` : "updated=1"}`);
+  revalidatePath(`/reports/${parsed.data.incidentId}`);
+  redirect(`/admin/reports?updated=1${campusQuery}`);
 }

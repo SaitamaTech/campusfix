@@ -38,6 +38,11 @@ export default async function LoginPage({
       variant: "danger",
       message: "Email verification or reset link is invalid or expired. Please request a new one.",
     };
+  } else if (params.error === "google_signin_failed") {
+    initialAlert = {
+      variant: "danger",
+      message: "Google sign-in could not be completed. Check that Google is enabled in Supabase and try again.",
+    };
   } else if (params.error === "account_suspended") {
     initialAlert = {
       variant: "danger",

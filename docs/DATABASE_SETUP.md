@@ -36,6 +36,12 @@ In **Authentication -> URL Configuration**:
 In **Authentication -> Providers -> Email**:
 - Ensure **Confirm email** is enabled for production student onboarding.
 
+To enable Google sign-in:
+
+1. Enable **Google** under **Authentication -> Providers** in Supabase and enter the OAuth client ID and secret from Google Cloud.
+2. In Google Cloud, add the Supabase project's callback URL shown in the provider settings (usually `https://<project-ref>.supabase.co/auth/v1/callback`) as an authorized redirect URI.
+3. Add `http://localhost:3000/auth/callback` and your deployed site's `/auth/callback` URL to Supabase's allowed redirect URLs.
+
 ## 4. Promote the First Super Administrator
 
 Public registration strictly creates `student` accounts and ignores any client-supplied role values. To promote an initial Super Administrator after they register and confirm their email, run in the Supabase SQL Editor:

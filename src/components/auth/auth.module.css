@@ -43,6 +43,43 @@
   gap: 16px;
 }
 
+.googleButton {
+  background: #fff;
+  border-color: #dadce0;
+  color: #202124;
+  box-shadow: none;
+}
+
+.googleButton:hover:not(:disabled) {
+  background: #f8f9fa;
+  border-color: #dadce0;
+  color: #202124;
+}
+
+.googleIcon {
+  color: #4285f4;
+  font-family: Arial, sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.authDivider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.authDivider::before,
+.authDivider::after {
+  flex: 1;
+  height: 1px;
+  background: var(--border-subtle);
+  content: "";
+}
+
 .formRow2 {
   display: grid;
   grid-template-columns: 1fr 1fr;

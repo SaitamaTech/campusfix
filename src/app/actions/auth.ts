@@ -254,6 +254,37 @@ export async function loginAction(
   redirect(getDefaultRouteForRole(role));
 }
 
+export async function googleSignInAction(formData: FormData): Promise<void> {
+  const supabase = await createClient();
+  if (!supabase) {
+    redirect("/login?error=supabase_not_configured");
+  }
+
+  const requestedNext = String(formData.get("next") ?? "").trim();
+  const safeNext =
+    requestedNext.startsWith("/") &&
+    !requestedNext.startsWith("//") &&
+    !requestedNext.includes("\\")
+      ? requestedNext
+      : "";
+  const callbackUrl = new URL("/auth/callback", getAppUrl());
+  callbackUrl.searchParams.set("provider", "google");
+  if (safeNext) {
+    callbackUrl.searchParams.set("next", safeNext);
+  }
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: callbackUrl.toString() },
+  });
+
+  if (error || !data.url) {
+    redirect("/login?error=google_signin_failed");
+  }
+
+  redirect(data.url);
+}
+
 export async function forgotPasswordAction(
   _prevState: AuthActionState,
   formData: FormData

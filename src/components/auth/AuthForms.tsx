@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, KeyRound, Mail, UserPlus } from "lucide-react";
 import {
   forgotPasswordAction,
+  googleSignInAction,
   loginAction,
   registerAction,
   resetPasswordAction,
@@ -44,6 +45,23 @@ export function LoginForm({
         <Alert variant="danger">{state.message}</Alert>
       )}
       {nextPath && <input type="hidden" name="next" value={nextPath} />}
+
+      <Button
+        type="submit"
+        formAction={googleSignInAction}
+        formNoValidate
+        variant="secondary"
+        size="lg"
+        fullWidth
+        className={styles.googleButton}
+      >
+        <span className={styles.googleIcon} aria-hidden="true">G</span>
+        Continue with Google
+      </Button>
+
+      <div className={styles.authDivider} aria-hidden="true">
+        <span>or sign in with email</span>
+      </div>
 
       <FormField
         label="Email Address"

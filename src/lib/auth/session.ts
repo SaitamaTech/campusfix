@@ -53,13 +53,22 @@ export async function getAuthenticatedContext(): Promise<AuthenticatedContext | 
   };
 }
 
-export async function requireAuthenticatedContext(): Promise<AuthenticatedContext> {
+export async function requireAuthenticatedContext(
+  options: { allowUnassignedCampus?: boolean } = {}
+): Promise<AuthenticatedContext> {
   const ctx = await getAuthenticatedContext();
   if (!ctx) {
     redirect("/login");
   }
   if (!ctx.profile.is_active) {
     redirect("/login?error=account_suspended");
+  }
+  if (
+    !options.allowUnassignedCampus &&
+    ctx.profile.role === "student" &&
+    !ctx.profile.university_id
+  ) {
+    redirect("/onboarding");
   }
   return ctx;
 }

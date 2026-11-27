@@ -35,6 +35,7 @@ export interface CampusSettings {
   university_id: string;
   require_matric_number: boolean;
   allowed_email_domains: string[];
+  first_verified_email_admin_claim: boolean;
   auto_approve_reports: boolean;
   allow_public_comments: boolean;
   duplicate_distance_meters: number;

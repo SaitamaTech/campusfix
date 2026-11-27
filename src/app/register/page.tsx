@@ -5,59 +5,30 @@ import { Card } from "@/components/ui/Card";
 import { RegisterForm } from "@/components/auth/AuthForms";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
-import type { CampusSettings, University } from "@/types/database";
 import styles from "@/components/auth/auth.module.css";
 
 export const metadata = {
-  title: "Student Registration",
+  title: "CampusFix Registration",
 };
 
 export default async function RegisterPage() {
   const supabaseReady = isSupabaseConfigured();
-  let universities: University[] = [];
+  let countries: string[] = [];
   let dataLoadWarning: string | null = null;
-  const settingsByUniversity: Record<
-    string,
-    Pick<CampusSettings, "require_matric_number" | "allowed_email_domains">
-  > = {};
 
   if (supabaseReady) {
     const supabase = await createClient();
     if (supabase) {
-      const [
-        { data: univRows, error: universitiesError },
-        { data: settingsRows, error: settingsError },
-      ] = await Promise.all([
-        supabase
-          .from("universities")
-          .select("*")
-          .eq("is_active", true)
-          .order("name", { ascending: true }),
-        supabase
-          .from("campus_settings")
-          .select("university_id, require_matric_number, allowed_email_domains"),
-      ]);
-
-      if (universitiesError) {
-        console.error("Failed to load active universities for registration:", universitiesError);
+      const { data, error } = await supabase.rpc("get_active_university_countries");
+      if (error) {
+        console.error("Failed to load active university countries:", error);
         dataLoadWarning =
-          "The university list could not be loaded. Check that the Supabase migrations are applied and active universities are readable.";
+          "The university directory could not be loaded. Apply the Supabase migrations and refresh this page.";
       } else {
-        universities = (univRows ?? []) as University[];
+        countries = (data ?? []).map((row: { country: string }) => row.country);
       }
-
-      if (settingsError) {
-        console.error("Failed to load campus registration settings:", settingsError);
-        dataLoadWarning ??=
-          "Some campus-specific registration requirements could not be loaded. Please contact support before creating an account.";
-      }
-
-      for (const s of settingsRows ?? []) {
-        settingsByUniversity[s.university_id] = {
-          require_matric_number: s.require_matric_number,
-          allowed_email_domains: s.allowed_email_domains ?? [],
-        };
-      }
+    } else {
+      dataLoadWarning = "Supabase could not be initialized. Check the project configuration.";
     }
   }
 
@@ -68,16 +39,17 @@ export default async function RegisterPage() {
         <div className={`${styles.authCardWrap} ${styles.authCardWrapWide}`}>
           <Card>
             <div className={styles.authHeader}>
-              <h1 className={styles.authTitle}>Create Student Account</h1>
+              <h1 className={styles.authTitle}>Create CampusFix Account</h1>
               <p className={styles.authSubtitle}>
                 Register to report campus issues, verify existing incidents, and track
-                real resolutions. Administrative roles are provisioned separately.
+                real resolutions. The first account to verify an approved campus email
+                may become its campus admin; email verification confirms domain access,
+                not staff status.
               </p>
             </div>
 
             <RegisterForm
-              universities={universities}
-              settingsByUniversity={settingsByUniversity}
+              countries={countries}
               supabaseReady={supabaseReady}
               dataLoadWarning={dataLoadWarning}
             />

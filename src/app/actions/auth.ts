@@ -100,13 +100,24 @@ export async function registerAction(
     };
   }
 
-  const { data: settings } = await supabase
+  const { data: settings, error: settingsError } = await supabase
     .from("campus_settings")
     .select("require_matric_number, allowed_email_domains")
     .eq("university_id", university.id)
     .single();
 
-  if (settings?.require_matric_number && !data.matricNumber?.trim()) {
+  if (settingsError || !settings) {
+    console.error(
+      "Could not load registration settings for university:",
+      settingsError ?? "No campus settings row exists."
+    );
+    return {
+      status: "error",
+      message: "Campus registration requirements could not be loaded. Please try again.",
+    };
+  }
+
+  if (settings.require_matric_number && !data.matricNumber?.trim()) {
     return {
       status: "error",
       message: "Your university requires a matriculation number to register.",
@@ -116,7 +127,7 @@ export async function registerAction(
     };
   }
 
-  const allowedDomains: string[] = settings?.allowed_email_domains ?? [];
+  const allowedDomains: string[] = settings.allowed_email_domains ?? [];
   if (allowedDomains.length > 0) {
     const emailDomain = data.email.split("@")[1]?.toLowerCase() ?? "";
     const matchesAllowed = allowedDomains.some(
@@ -139,7 +150,7 @@ export async function registerAction(
     password: data.password,
     options: {
       emailRedirectTo: `${appUrl}/auth/callback?next=/onboarding`,
-      // Note: role is intentionally omitted and strictly enforced as 'student' in SQL trigger.
+      // Role metadata is omitted; SQL only promotes the first verified institutional-domain account.
       data: {
         full_name: data.fullName,
         university_id: university.id,
@@ -159,14 +170,32 @@ export async function registerAction(
   }
 
   // If Supabase email confirmation is disabled, user receives an active session immediately
-  if (signUpData.session) {
-    redirect("/onboarding");
+  if (signUpData.session && signUpData.user) {
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", signUpData.user.id)
+      .single();
+
+    if (profileError || !profile) {
+      console.error("Could not load the new account role:", profileError);
+      return {
+        status: "error",
+        message:
+          "Your account was created, but CampusFix could not finish loading it. Please sign in to continue.",
+      };
+    }
+
+    const role = profile.role as UserRole;
+    redirect(
+      role === "student" ? "/onboarding" : getDefaultRouteForRole(role)
+    );
   }
 
   return {
     status: "success",
     message:
-      "Account created! Please check your email inbox and click the verification link to activate your CampusFix student account.",
+      "Account created! Check your email and click the verification link to activate your CampusFix account.",
   };
 }
 
@@ -370,7 +399,7 @@ export async function resetPasswordAction(
   redirect("/login?reset=success");
 }
 
-export async function completeOnboardingAction(): Promise<void> {
+export async function completeOnboardingAction(formData: FormData): Promise<void> {
   const supabase = await createClient();
   if (!supabase) {
     redirect("/login");
@@ -378,18 +407,103 @@ export async function completeOnboardingAction(): Promise<void> {
 
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
 
-  if (!user) {
+  if (userError || !user) {
     redirect("/login");
   }
 
-  await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .update({ onboarding_completed: true })
+    .select("university_id, email, role, is_active")
+    .eq("id", user.id)
+    .single();
+
+  if (profileError || !profile) {
+    console.error("Could not load profile during onboarding:", profileError);
+    redirect("/onboarding?error=profile_unavailable");
+  }
+  if (!profile.is_active) {
+    redirect("/login?error=account_suspended");
+  }
+  if (profile.role !== "student") {
+    redirect(getDefaultRouteForRole(profile.role as UserRole));
+  }
+
+  let universityId = profile.university_id;
+  if (!universityId) {
+    const requestedUniversityId = String(formData.get("universityId") ?? "").trim();
+    if (
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        requestedUniversityId
+      )
+    ) {
+      redirect("/onboarding?error=choose_university");
+    }
+
+    const { data: university, error: universityError } = await supabase
+      .from("universities")
+      .select("id")
+      .eq("id", requestedUniversityId)
+      .eq("is_active", true)
+      .single();
+
+    if (universityError || !university) {
+      console.error("Could not load onboarding university:", universityError);
+      redirect("/onboarding?error=university_unavailable");
+    }
+
+    const { data: settings, error: settingsError } = await supabase
+      .from("campus_settings")
+      .select("require_matric_number, allowed_email_domains")
+      .eq("university_id", university.id)
+      .single();
+
+    if (settingsError || !settings) {
+      console.error("Could not load campus requirements during onboarding:", settingsError);
+      redirect("/onboarding?error=campus_settings_unavailable");
+    }
+
+    if (settings.require_matric_number) {
+      redirect("/onboarding?error=campus_requires_registration");
+    }
+
+    const allowedDomains: string[] = settings.allowed_email_domains ?? [];
+    const emailDomain = profile.email.split("@")[1]?.toLowerCase() ?? "";
+    if (
+      allowedDomains.length > 0 &&
+      !allowedDomains.some((domain) => domain.toLowerCase().trim() === emailDomain)
+    ) {
+      redirect("/onboarding?error=institution_email_required");
+    }
+
+    universityId = university.id;
+  }
+
+  const { error: updateError } = await supabase
+    .from("profiles")
+    .update({ university_id: universityId, onboarding_completed: true })
     .eq("id", user.id);
 
-  redirect("/dashboard");
+  if (updateError) {
+    console.error("Could not complete user onboarding:", updateError);
+    redirect("/onboarding?error=profile_update_failed");
+  }
+
+  const { data: updatedProfile, error: updatedProfileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (updatedProfileError || !updatedProfile) {
+    console.error("Could not load role after onboarding:", updatedProfileError);
+    redirect("/onboarding?error=profile_unavailable");
+  }
+
+  const role = updatedProfile.role as UserRole;
+  redirect(role === "student" ? "/dashboard" : getDefaultRouteForRole(role));
 }
 
 export async function updateProfileAction(

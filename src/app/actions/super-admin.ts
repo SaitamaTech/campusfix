@@ -97,7 +97,11 @@ export async function updateAccountStatusAction(formData: FormData): Promise<voi
 }
 
 export async function createAnnouncementAction(formData: FormData): Promise<void> {
-  const ctx = await requireRole(["super_admin"], { includeUniversity: false });
+  const ctx = await requireRole(["campus_admin", "super_admin"], { includeUniversity: false });
+  const announcementsPath =
+    ctx.profile.role === "campus_admin"
+      ? "/admin/announcements"
+      : "/super-admin/announcements";
   const parsed = z.object({
     title: z.string().trim().min(3).max(140),
     body: z.string().trim().min(10).max(5000),
@@ -107,12 +111,12 @@ export async function createAnnouncementAction(formData: FormData): Promise<void
   });
 
   if (!parsed.success) {
-    redirectWithResult("/super-admin/announcements", "error", "invalid_announcement");
+    redirectWithResult(announcementsPath, "error", "invalid_announcement");
   }
 
   const supabase = await createClient();
   if (!supabase) {
-    redirectWithResult("/super-admin/announcements", "error", "service_unavailable");
+    redirectWithResult(announcementsPath, "error", "service_unavailable");
   }
 
   const { error } = await supabase.from("announcements").insert({
@@ -123,12 +127,13 @@ export async function createAnnouncementAction(formData: FormData): Promise<void
 
   if (error) {
     console.error("Announcement publishing failed:", error);
-    redirectWithResult("/super-admin/announcements", "error", "announcement_failed");
+    redirectWithResult(announcementsPath, "error", "announcement_failed");
   }
 
   revalidatePath("/super-admin/announcements");
+  revalidatePath("/admin/announcements");
   revalidatePath("/announcements");
-  redirectWithResult("/super-admin/announcements", "notice", "announcement_published");
+  redirectWithResult(announcementsPath, "notice", "announcement_published");
 }
 
 export async function toggleAnnouncementAction(formData: FormData): Promise<void> {

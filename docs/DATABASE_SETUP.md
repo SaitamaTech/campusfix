@@ -25,8 +25,9 @@ Run the migration scripts in order inside the Supabase **SQL Editor** (or via `s
 7. `supabase/migrations/0007_admin_controls_and_announcements.sql` — Adds platform announcements, campus-scoped operations metrics, and audited Super Admin account role/status controls.
 8. `supabase/migrations/0008_report_media_integrity.sql` — Restricts report image metadata to report owners and authorized resolution uploads, and extends secure campus-scoped storage uploads.
 9. `supabase/migrations/0009_incident_workflow.sql` — Adds the reopened lifecycle status, admin submission notifications, and an atomic campus-scoped RPC for report status changes, department assignments, and internal notes.
+10. `supabase/migrations/0010_campus_admin_announcements.sql` — Allows active Campus Admins to publish platform-wide announcements; existing Super Admin moderation remains unchanged.
 
-The admin console also provides department and location management and campus settings. Announcements are readable by authenticated users; only Super Admins can publish them or manage accounts. Apply all migrations in filename order before deploying the matching application code.
+The admin console also provides department and location management and campus settings. Announcements are readable by authenticated users; Campus Admins and Super Admins can publish them, while only Super Admins can manage accounts and moderate announcements. Apply all migrations in filename order before deploying the matching application code.
 
 > **Important Note on Campus Coordinates:** No University of Ilesa GPS coordinates are invented or hardcoded. `campus_settings.map_configured` starts as `false` with `NULL` coordinates until an authorized administrator configures verified campus coordinates and boundaries.
 

@@ -58,6 +58,7 @@ function getNavItemsForRole(role: UserRole): NavLinkItem[] {
     return [
       { href: "/admin", label: "Admin Dashboard", icon: Shield },
       { href: "/admin/reports", label: "Manage Reports", icon: FileText },
+      { href: "/admin/announcements", label: "Post Announcements", icon: Megaphone },
       { href: "/admin/departments", label: "Departments", icon: Building2 },
       { href: "/admin/locations", label: "Campus Locations", icon: MapPin },
       { href: "/admin/settings", label: "Campus Settings", icon: Settings },

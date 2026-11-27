@@ -61,7 +61,7 @@ export default async function AdminDashboardPage() {
   return (
     <AppShell
       profile={ctx.profile}
-      university={ctx.university}
+      institutionName={ctx.institutionName}
       pageTitle="Campus Administrator Console"
     >
       <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -70,7 +70,7 @@ export default async function AdminDashboardPage() {
             <Shield size={22} color="var(--accent-highlight)" />
             <div>
               <h2 style={{ fontSize: "20px", fontWeight: 800 }}>
-                {ctx.university?.name ?? "Campus Administration"}
+                {ctx.institutionName ?? "Operations Workspace"}
               </h2>
               <p style={{ fontSize: "13.5px", color: "var(--text-secondary)" }}>
                 Server-verified administrative access active for {ctx.profile.full_name}.

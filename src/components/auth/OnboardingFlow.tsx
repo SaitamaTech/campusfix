@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Alert } from "@/components/ui/Alert";
+import { FormField, Input } from "@/components/ui/FormField";
 import { completeOnboardingAction } from "@/app/actions/auth";
 
 const ONBOARDING_SLIDES = [
@@ -43,11 +44,11 @@ const ONBOARDING_SLIDES = [
 
 export function OnboardingFlow({
   studentName,
-  campusName,
+  institutionName,
   onboardingError,
 }: {
   studentName: string;
-  campusName: string;
+  institutionName: string | null;
   onboardingError: string | null;
 }) {
   const [step, setStep] = useState(0);
@@ -62,7 +63,7 @@ export function OnboardingFlow({
           {current.badge}
         </Badge>
         <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>
-          {campusName}
+          Personalize your workspace
         </span>
       </div>
 
@@ -155,7 +156,26 @@ export function OnboardingFlow({
               <ArrowRight size={15} />
             </Button>
           ) : (
-            <form action={completeOnboardingAction}>
+            <form
+              action={completeOnboardingAction}
+              style={{ display: "grid", gap: "12px", justifyItems: "end" }}
+            >
+              <FormField
+                label="University or Community Name"
+                htmlFor="onboarding-institution"
+                hint="This name will appear on your dashboard."
+              >
+                <Input
+                  id="onboarding-institution"
+                  name="institutionName"
+                  type="text"
+                  autoComplete="organization"
+                  defaultValue={institutionName ?? ""}
+                  placeholder="e.g. Northshore University"
+                  required
+                  maxLength={120}
+                />
+              </FormField>
               <Button
                 type="submit"
                 variant="primary"

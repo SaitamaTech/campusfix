@@ -2,7 +2,7 @@
 
 import React, { useActionState } from "react";
 import Link from "next/link";
-import { ArrowRight, Building2, KeyRound, Mail, UserPlus } from "lucide-react";
+import { ArrowRight, KeyRound, Mail, UserPlus } from "lucide-react";
 import {
   forgotPasswordAction,
   googleSignInAction,
@@ -109,30 +109,20 @@ export function LoginForm({
 }
 
 export function RegisterForm({
-  campusName,
   matricRequired,
   allowedEmailDomains,
-  supabaseReady,
   dataLoadWarning,
 }: {
-  campusName: string;
   matricRequired: boolean;
-  allowedEmailDomains: string[];
-  supabaseReady: boolean;
+  allowedEmailDomains?: string[];
   dataLoadWarning: string | null;
 }) {
   const [state, action, pending] = useActionState(registerAction, INITIAL_STATE);
+  const emailDomains = allowedEmailDomains ?? [];
 
   return (
     <form action={action} className={styles.formStack} noValidate>
-      {!supabaseReady && (
-        <Alert variant="warning" title="Database Setup Required">
-          Supabase environment variables are not configured yet. Configure{" "}
-          <code>.env.local</code> and run the SQL migrations before creating accounts.
-        </Alert>
-      )}
-
-      {supabaseReady && dataLoadWarning && (
+      {dataLoadWarning && (
         <Alert variant="warning" title="Registration data could not be fully loaded">
           {dataLoadWarning}
         </Alert>
@@ -147,17 +137,6 @@ export function RegisterForm({
           {state.message}
         </Alert>
       )}
-
-      <div className={styles.campusBanner}>
-        <span className={styles.campusIcon} aria-hidden="true">
-          <Building2 size={18} />
-        </span>
-        <div className={styles.campusDetails}>
-          <span className={styles.campusLabel}>Your campus</span>
-          <strong className={styles.campusName}>{campusName}</strong>
-          <span className={styles.campusHint}>Your account will be set up here.</span>
-        </div>
-      </div>
 
       <div className={styles.formRow2}>
         <FormField
@@ -177,28 +156,46 @@ export function RegisterForm({
         </FormField>
 
         <FormField
-          label="Matriculation Number"
-          htmlFor="reg-matric"
-          optional={!matricRequired}
-          error={state.fieldErrors?.matricNumber}
+          label="University or Community Name"
+          htmlFor="reg-institution"
+          hint="This name will appear on your dashboard."
+          error={state.fieldErrors?.institutionName}
         >
           <Input
-            id="reg-matric"
-            name="matricNumber"
+            id="reg-institution"
+            name="institutionName"
             type="text"
-            placeholder="e.g. ULS/2025/0142"
-            required={matricRequired}
-            hasError={Boolean(state.fieldErrors?.matricNumber)}
+            autoComplete="organization"
+            placeholder="e.g. Northshore University"
+            required
+            maxLength={120}
+            hasError={Boolean(state.fieldErrors?.institutionName)}
           />
         </FormField>
       </div>
 
       <FormField
+        label="Matriculation Number"
+        htmlFor="reg-matric"
+        optional={!matricRequired}
+        error={state.fieldErrors?.matricNumber}
+      >
+        <Input
+          id="reg-matric"
+          name="matricNumber"
+          type="text"
+          placeholder="e.g. 2025/0142"
+          required={matricRequired}
+          hasError={Boolean(state.fieldErrors?.matricNumber)}
+        />
+      </FormField>
+
+      <FormField
         label="Email Address"
         htmlFor="reg-email"
         hint={
-          allowedEmailDomains.length > 0
-            ? `Approved institutional domains: ${allowedEmailDomains.join(", ")}`
+          emailDomains.length > 0
+            ? `Approved institutional domains: ${emailDomains.join(", ")}`
             : "A verification link will be sent to this email address."
         }
         error={state.fieldErrors?.email}
@@ -289,11 +286,7 @@ export function RegisterForm({
         variant="primary"
         size="lg"
         fullWidth
-        disabled={
-          pending ||
-          !supabaseReady ||
-          Boolean(dataLoadWarning)
-        }
+        disabled={pending || Boolean(dataLoadWarning)}
       >
         <UserPlus size={17} />
         {pending ? "Creating account..." : "Create Account"}

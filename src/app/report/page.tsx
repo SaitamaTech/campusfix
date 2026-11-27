@@ -39,7 +39,7 @@ export default async function ReportPage({
   }
 
   return (
-    <AppShell profile={ctx.profile} university={ctx.university} pageTitle="Report a Problem">
+    <AppShell profile={ctx.profile} institutionName={ctx.institutionName} pageTitle="Report a Problem">
       <div style={{ maxWidth: "820px", margin: "0 auto" }}>
         {params.error && (
           <Alert variant="danger" title="Report could not be submitted">{params.error}</Alert>

@@ -45,7 +45,7 @@ export default async function AdminReportsPage({
   }
 
   return (
-    <AppShell profile={ctx.profile} university={ctx.university} pageTitle="Manage Reports">
+    <AppShell profile={ctx.profile} institutionName={ctx.institutionName} pageTitle="Manage Reports">
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         {filters.updated && <Alert variant="success" title="Report updated">The incident status and timeline were updated.</Alert>}
         {filters.error && <Alert variant="danger" title="Update failed">{filters.error}</Alert>}

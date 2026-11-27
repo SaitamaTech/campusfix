@@ -26,7 +26,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { logoutAction } from "@/app/actions/auth";
 import { ROLE_LABELS } from "@/lib/auth/rbac";
-import type { Profile, University, UserRole } from "@/types/database";
+import type { Profile, UserRole } from "@/types/database";
 import styles from "./layout.module.css";
 
 interface NavLinkItem {
@@ -72,14 +72,14 @@ function getNavItemsForRole(role: UserRole): NavLinkItem[] {
 
 interface AppShellProps {
   profile: Profile;
-  university: University | null;
+  institutionName: string | null;
   pageTitle: string;
   children: React.ReactNode;
 }
 
 export function AppShell({
   profile,
-  university,
+  institutionName,
   pageTitle,
   children,
 }: AppShellProps) {
@@ -94,7 +94,7 @@ export function AppShell({
           <BrandLogo href={profile.role === "student" ? "/dashboard" : "/admin"} />
           <div className={styles.sidebarUnivPill}>
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {university ? university.short_name : "Multi-Campus"}
+              {institutionName ?? "Your workspace"}
             </span>
             <Badge tone={profile.role === "student" ? "neutral" : "orange"}>
               {ROLE_LABELS[profile.role]}

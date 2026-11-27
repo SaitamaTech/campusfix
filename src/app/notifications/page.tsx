@@ -36,7 +36,7 @@ export default async function NotificationsPage() {
   }
 
   return (
-    <AppShell profile={ctx.profile} university={ctx.university} pageTitle="Notifications">
+    <AppShell profile={ctx.profile} institutionName={ctx.institutionName} pageTitle="Notifications">
       <Card>
         {notifications.length === 0 ? (
           <p style={{ textAlign: "center", color: "var(--text-secondary)", padding: "30px" }}>

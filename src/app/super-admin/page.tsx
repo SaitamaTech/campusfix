@@ -34,7 +34,7 @@ export default async function SuperAdminPage() {
   return (
     <AppShell
       profile={ctx.profile}
-      university={ctx.university}
+      institutionName={ctx.institutionName}
       pageTitle="Super Admin Platform Console"
     >
       <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>

@@ -2,7 +2,6 @@ import React from "react";
 import { requireAuthenticatedContext } from "@/lib/auth/session";
 import { OnboardingFlow } from "@/components/auth/OnboardingFlow";
 import { BrandLogo } from "@/components/layout/BrandLogo";
-import { DEFAULT_CAMPUS_NAME } from "@/lib/campus";
 
 export const metadata = {
   title: "Student Onboarding",
@@ -17,14 +16,16 @@ export default async function OnboardingPage({
   const params = await searchParams;
 
   const onboardingErrors: Record<string, string> = {
-    university_unavailable: "The default campus is unavailable. Please try again later.",
+    university_unavailable: "The default workspace is unavailable. Please try again later.",
     campus_settings_unavailable:
-      "Campus registration requirements could not be loaded. Please try again later.",
+      "Workspace requirements could not be loaded. Please try again later.",
     campus_requires_registration:
-      "This campus requires a matriculation number. Complete registration with your matriculation number before continuing.",
+      "A student ID is required for this workspace. Complete registration with your student ID before continuing.",
     institution_email_required:
-      "Use an email address from one of this campus's approved institutional domains.",
-    profile_update_failed: "Your campus could not be saved. Please try again.",
+      "Use an email address from one of this workspace's approved institutional domains.",
+    institution_name_required: "Enter a university or community name before continuing.",
+    institution_name_save_failed: "Your institution name could not be saved. Please try again.",
+    profile_update_failed: "Your profile could not be saved. Please try again.",
     profile_unavailable: "Your account profile could not be loaded. Please sign in again.",
   };
   const onboardingError = params.error
@@ -56,7 +57,7 @@ export default async function OnboardingPage({
       >
         <OnboardingFlow
           studentName={ctx.profile.full_name}
-          campusName={ctx.university?.name ?? DEFAULT_CAMPUS_NAME}
+          institutionName={ctx.institutionName}
           onboardingError={onboardingError}
         />
       </main>

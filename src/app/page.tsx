@@ -332,11 +332,11 @@ export default async function LandingPage() {
                   <Building2 size={20} />
                 </div>
                 <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "8px" }}>
-                  Campus-First Platform
+                  Community-First Platform
                 </h3>
                 <p style={{ fontSize: "13.5px", color: "var(--text-secondary)" }}>
-                  Focused on University of Ilesa today, with a campus-first foundation
-                  for future expansion.
+                  Built to help local communities report issues and track meaningful
+                  improvements together.
                 </p>
               </Card>
             </div>

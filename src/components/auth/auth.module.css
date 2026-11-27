@@ -86,53 +86,6 @@
   gap: 14px;
 }
 
-.campusBanner {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  border: 1px solid var(--accent-primary-border);
-  border-radius: var(--radius-md);
-  background: var(--accent-primary-soft);
-}
-
-.campusIcon {
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-  border-radius: 11px;
-  background: var(--bg-surface);
-  color: var(--accent-primary);
-}
-
-.campusDetails {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.campusLabel {
-  color: var(--text-muted);
-  font-size: 11px;
-  font-weight: 650;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.campusName {
-  color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.campusHint {
-  color: var(--text-secondary);
-  font-size: 12px;
-}
-
 .authFooterRow {
   margin-top: 20px;
   padding-top: 18px;

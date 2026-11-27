@@ -6,6 +6,7 @@ import { getDefaultRouteForRole } from "./rbac";
 export interface AuthenticatedContext {
   userId: string;
   email: string;
+  institutionName: string | null;
   profile: Profile;
   university: University | null;
 }
@@ -35,6 +36,14 @@ export async function getAuthenticatedContext(): Promise<AuthenticatedContext | 
     return null;
   }
 
+  const metadataName = user.user_metadata?.institution_name;
+  const normalizedInstitutionName =
+    typeof metadataName === "string" ? metadataName.trim() : "";
+  const institutionName =
+    normalizedInstitutionName.length > 0 && normalizedInstitutionName.length <= 120
+      ? normalizedInstitutionName
+      : null;
+
   let university: University | null = null;
   if (profile.university_id) {
     const { data: univ } = await supabase
@@ -48,6 +57,7 @@ export async function getAuthenticatedContext(): Promise<AuthenticatedContext | 
   return {
     userId: user.id,
     email: user.email ?? profile.email,
+    institutionName,
     profile: profile as Profile,
     university: university as University | null,
   };

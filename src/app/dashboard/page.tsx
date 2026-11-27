@@ -114,7 +114,7 @@ export default async function StudentDashboardPage() {
   return (
     <AppShell
       profile={ctx.profile}
-      university={ctx.university}
+      institutionName={ctx.institutionName}
       pageTitle="Dashboard"
     >
       <div className={styles.dashboard}>
@@ -144,9 +144,7 @@ export default async function StudentDashboardPage() {
             <p className={styles.eyebrow}>Campus overview</p>
             <h2 className={styles.welcomeTitle}>Welcome back, {firstName}.</h2>
             <p className={styles.welcomeText}>
-              {ctx.university?.name
-                ? `Here is what is happening at ${ctx.university.name}. Spot an issue, share it with your community, and follow it through to resolution.`
-                : "Make campus issues visible, bring your community together, and follow progress through to resolution."}
+              {`Here is what is happening at ${ctx.institutionName ?? "your community"}. Spot an issue, share it with your community, and follow it through to resolution.`}
             </p>
           </div>
           <div className={styles.welcomeActions}>
@@ -231,7 +229,7 @@ export default async function StudentDashboardPage() {
             <div>
               <h3 className={styles.sectionTitle}>Recent campus activity</h3>
               <p className={styles.sectionSubtitle}>
-                Latest reports from {ctx.university?.short_name ?? "your campus"}.
+                Latest reports from {ctx.institutionName ?? "your community"}.
               </p>
             </div>
             <Button href="/explore" variant="ghost" size="sm">

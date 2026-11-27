@@ -22,7 +22,7 @@ export default async function MyReportsPage() {
 
   const reports = data ?? [];
   return (
-    <AppShell profile={ctx.profile} university={ctx.university} pageTitle="My Reports">
+    <AppShell profile={ctx.profile} institutionName={ctx.institutionName} pageTitle="My Reports">
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
           <div>

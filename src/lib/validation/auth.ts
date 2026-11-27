@@ -1,11 +1,18 @@
 import { z } from "zod";
 
+export const institutionNameSchema = z
+  .string()
+  .trim()
+  .min(2, "Enter an institution name.")
+  .max(120, "Institution name cannot exceed 120 characters.");
+
 export const registerSchema = z.object({
   fullName: z
     .string()
     .trim()
     .min(2, "Full name must be at least 2 characters.")
     .max(120, "Full name cannot exceed 120 characters."),
+  institutionName: institutionNameSchema,
   email: z
     .string()
     .trim()

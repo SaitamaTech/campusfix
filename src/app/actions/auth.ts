@@ -9,6 +9,7 @@ import { getDefaultRouteForRole } from "@/lib/auth/rbac";
 import { DEFAULT_CAMPUS_SLUG } from "@/lib/campus";
 import {
   forgotPasswordSchema,
+  institutionNameSchema,
   loginSchema,
   profileUpdateSchema,
   registerSchema,
@@ -57,6 +58,7 @@ export async function registerAction(
 
   const parsed = registerSchema.safeParse({
     fullName: formData.get("fullName"),
+    institutionName: formData.get("institutionName"),
     email: formData.get("email"),
     password: formData.get("password"),
     matricNumber: formData.get("matricNumber"),
@@ -77,14 +79,13 @@ export async function registerAction(
   if (!supabase) {
     return {
       status: "error",
-      message:
-        "Supabase is not configured yet. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local.",
+      message: "Registration is unavailable right now. Please try again later.",
     };
   }
 
   const data = parsed.data;
 
-  // Resolve the configured single campus and enforce its registration rules.
+  // Resolve the default workspace and enforce its registration rules.
   const { data: university, error: univErr } = await supabase
     .from("universities")
     .select("id, name, is_active")
@@ -152,6 +153,7 @@ export async function registerAction(
       // Role metadata is omitted; the database trigger assigns the student role.
       data: {
         full_name: data.fullName,
+        institution_name: data.institutionName,
         university_id: university.id,
         matric_number: data.matricNumber || null,
         department: data.department,
@@ -398,7 +400,7 @@ export async function resetPasswordAction(
   redirect("/login?reset=success");
 }
 
-export async function completeOnboardingAction(): Promise<void> {
+export async function completeOnboardingAction(formData: FormData): Promise<void> {
   const supabase = await createClient();
   if (!supabase) {
     redirect("/login");
@@ -428,6 +430,21 @@ export async function completeOnboardingAction(): Promise<void> {
   }
   if (profile.role !== "student") {
     redirect(getDefaultRouteForRole(profile.role as UserRole));
+  }
+
+  const parsedInstitutionName = institutionNameSchema.safeParse(
+    formData.get("institutionName")
+  );
+  if (!parsedInstitutionName.success) {
+    redirect("/onboarding?error=institution_name_required");
+  }
+
+  const { error: metadataError } = await supabase.auth.updateUser({
+    data: { institution_name: parsedInstitutionName.data },
+  });
+  if (metadataError) {
+    console.error("Could not save institution name during onboarding:", metadataError);
+    redirect("/onboarding?error=institution_name_save_failed");
   }
 
   let universityId = profile.university_id;

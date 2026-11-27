@@ -44,6 +44,6 @@ npm run lint
 npm run build
 ```
 
-CampusFix is currently configured for a single campus: University of Ilesa. New accounts are assigned to that campus automatically. Its seed data and default settings are included in `supabase/migrations/0003_storage_and_seed.sql`; campus locations and exact map coordinates remain institution-specific and should be configured before relying on GPS-based map context in a live deployment.
+New users provide a university or community display name that appears in their workspace. The current database still uses one configured default workspace for report scoping; the display name does not create a separate database tenant. Workspace settings and initial data are seeded in `supabase/migrations/0003_storage_and_seed.sql`.
 
-If you previously applied the removed university-directory migrations to Supabase, deleting their files from this repository does not remove data or schema already applied to your database. New registrations and accounts without a campus use the seeded University of Ilesa campus; existing account assignments are preserved.
+If you previously applied the removed university-directory migrations to Supabase, deleting their files from this repository does not remove data or schema already applied to your database. Existing account assignments are preserved.

@@ -25,7 +25,7 @@ export default async function MapPage() {
   const incidents = data ?? [];
 
   return (
-    <AppShell profile={ctx.profile} university={ctx.university} pageTitle="Campus Map">
+    <AppShell profile={ctx.profile} institutionName={ctx.institutionName} pageTitle="Campus Map">
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 300px", gap: "16px" }}>
         <Card>
           <iframe

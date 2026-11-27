@@ -16,7 +16,7 @@ export default async function ProfilePage() {
   return (
     <AppShell
       profile={ctx.profile}
-      university={ctx.university}
+      institutionName={ctx.institutionName}
       pageTitle="Profile & Settings"
     >
       <div style={{ display: "flex", flexDirection: "column", gap: "20px", maxWidth: "760px" }}>
@@ -33,7 +33,7 @@ export default async function ProfilePage() {
             <div>
               <h2 style={{ fontSize: "18px", fontWeight: 700 }}>Account Identity</h2>
               <p style={{ fontSize: "13.5px", color: "var(--text-secondary)" }}>
-                {ctx.profile.email} &bull; {ctx.university?.name ?? "Unassigned University"}
+                {ctx.profile.email} &bull; {ctx.institutionName ?? "No institution name provided"}
               </p>
             </div>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
@@ -50,8 +50,8 @@ export default async function ProfilePage() {
             Academic &amp; Personal Details
           </h2>
           <p style={{ fontSize: "13.5px", color: "var(--text-secondary)", marginBottom: "18px" }}>
-            Your role and institutional assignment are enforced on the server and cannot
-            be self-modified.
+            Your institution name is shown in your workspace. Role and access are
+            controlled by your account permissions.
           </p>
           <ProfileSettingsForm profile={ctx.profile} />
         </Card>

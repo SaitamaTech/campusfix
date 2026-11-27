@@ -34,7 +34,7 @@ export default async function ExplorePage({
   }
 
   return (
-    <AppShell profile={ctx.profile} university={ctx.university} pageTitle="Explore Reports">
+    <AppShell profile={ctx.profile} institutionName={ctx.institutionName} pageTitle="Explore Reports">
       <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
         <Card highlighted>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>

@@ -57,7 +57,7 @@ export default async function ReportDetailPage({
   const isOwner = incident.reporter_id === ctx.userId;
 
   return (
-    <AppShell profile={ctx.profile} university={ctx.university} pageTitle="Report Details">
+    <AppShell profile={ctx.profile} institutionName={ctx.institutionName} pageTitle="Report Details">
       <div style={{ maxWidth: "960px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "16px" }}>
         {query.submitted && <Alert variant="success" title="Report submitted">Your campus report is now visible for community verification.</Alert>}
         {query.verified && <Alert variant="success" title="Thank you">Your community verification was recorded.</Alert>}

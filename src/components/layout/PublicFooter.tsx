@@ -20,7 +20,7 @@ export function PublicFooter() {
             >
               A smarter campus starts with you. Built for transparent campus issue
               reporting, community verification, and accountable maintenance workflows
-              at the University of Ilesa.
+              for every community.
             </p>
           </div>
 

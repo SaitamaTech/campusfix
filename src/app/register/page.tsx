@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { RegisterForm } from "@/components/auth/AuthForms";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { DEFAULT_CAMPUS_NAME, DEFAULT_CAMPUS_SLUG } from "@/lib/campus";
+import { DEFAULT_CAMPUS_SLUG } from "@/lib/campus";
 import styles from "@/components/auth/auth.module.css";
 
 export const metadata = {
@@ -14,7 +14,6 @@ export const metadata = {
 
 export default async function RegisterPage() {
   const supabaseReady = isSupabaseConfigured();
-  let campusName = DEFAULT_CAMPUS_NAME;
   let matricRequired = false;
   let allowedEmailDomains: string[] = [];
   let dataLoadWarning: string | null = null;
@@ -24,17 +23,16 @@ export default async function RegisterPage() {
     if (supabase) {
       const { data: campus, error: campusError } = await supabase
         .from("universities")
-        .select("id, name")
+        .select("id")
         .eq("slug", DEFAULT_CAMPUS_SLUG)
         .eq("is_active", true)
         .single();
 
       if (campusError || !campus) {
-        console.error("Failed to load the default campus:", campusError);
+        console.error("Failed to load the default workspace:", campusError);
         dataLoadWarning =
-          "The default campus could not be loaded. Apply the Supabase migrations and refresh this page.";
+          "The registration workspace could not be loaded. Please try again later.";
       } else {
-        campusName = campus.name;
         const { data: settings, error: settingsError } = await supabase
           .from("campus_settings")
           .select("require_matric_number, allowed_email_domains")
@@ -42,9 +40,9 @@ export default async function RegisterPage() {
           .single();
 
         if (settingsError || !settings) {
-          console.error("Failed to load default campus settings:", settingsError);
+          console.error("Failed to load registration workspace settings:", settingsError);
           dataLoadWarning =
-            "Campus registration requirements could not be loaded. Please try again later.";
+            "Registration requirements could not be loaded. Please try again later.";
         } else {
           matricRequired = settings.require_matric_number;
           allowedEmailDomains = settings.allowed_email_domains ?? [];
@@ -64,16 +62,14 @@ export default async function RegisterPage() {
             <div className={styles.authHeader}>
               <h1 className={styles.authTitle}>Create CampusFix Account</h1>
               <p className={styles.authSubtitle}>
-                Join {campusName} to report campus issues, verify incidents, and follow
-                them through to resolution. New accounts are assigned to this campus.
+                Report local infrastructure issues, verify incidents, and follow them
+                through to resolution. Choose the name you want shown on your dashboard.
               </p>
             </div>
 
             <RegisterForm
-              campusName={campusName}
               matricRequired={matricRequired}
               allowedEmailDomains={allowedEmailDomains}
-              supabaseReady={supabaseReady}
               dataLoadWarning={dataLoadWarning}
             />
 

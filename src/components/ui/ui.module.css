@@ -239,25 +239,25 @@
 
 .badgeSuccess {
   background-color: var(--status-success-soft);
-  border-color: #b9e3ca;
+  border-color: var(--status-success-border);
   color: var(--status-success);
 }
 
 .badgeWarning {
   background-color: var(--status-warning-soft);
-  border-color: #f0d7a2;
+  border-color: var(--status-warning-border);
   color: var(--status-warning);
 }
 
 .badgeInfo {
   background-color: var(--status-info-soft);
-  border-color: #c4deee;
+  border-color: var(--status-info-border);
   color: var(--status-info);
 }
 
 .badgeViolet {
   background-color: var(--status-violet-soft);
-  border-color: #d8cbed;
+  border-color: var(--status-violet-border);
   color: var(--status-violet);
 }
 
@@ -285,25 +285,25 @@
 
 .alertInfo {
   background-color: var(--status-info-soft);
-  border-color: #c4deee;
+  border-color: var(--status-info-border);
   color: var(--status-info);
 }
 
 .alertSuccess {
   background-color: var(--status-success-soft);
-  border-color: #b9e3ca;
+  border-color: var(--status-success-border);
   color: var(--status-success);
 }
 
 .alertWarning {
   background-color: var(--status-warning-soft);
-  border-color: #f0d7a2;
+  border-color: var(--status-warning-border);
   color: var(--status-warning);
 }
 
 .alertDanger {
   background-color: var(--status-danger-soft);
-  border-color: #efc5c8;
+  border-color: var(--status-danger-border);
   color: var(--status-danger);
 }
 
@@ -316,7 +316,7 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background-color: rgba(15, 23, 42, 0.48);
+  background-color: var(--overlay-scrim);
   backdrop-filter: blur(6px);
 }
 

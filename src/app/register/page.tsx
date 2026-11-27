@@ -15,6 +15,7 @@ export const metadata = {
 export default async function RegisterPage() {
   const supabaseReady = isSupabaseConfigured();
   let universities: University[] = [];
+  let dataLoadWarning: string | null = null;
   const settingsByUniversity: Record<
     string,
     Pick<CampusSettings, "require_matric_number" | "allowed_email_domains">
@@ -23,7 +24,10 @@ export default async function RegisterPage() {
   if (supabaseReady) {
     const supabase = await createClient();
     if (supabase) {
-      const [{ data: univRows }, { data: settingsRows }] = await Promise.all([
+      const [
+        { data: univRows, error: universitiesError },
+        { data: settingsRows, error: settingsError },
+      ] = await Promise.all([
         supabase
           .from("universities")
           .select("*")
@@ -34,7 +38,20 @@ export default async function RegisterPage() {
           .select("university_id, require_matric_number, allowed_email_domains"),
       ]);
 
-      universities = (univRows ?? []) as University[];
+      if (universitiesError) {
+        console.error("Failed to load active universities for registration:", universitiesError);
+        dataLoadWarning =
+          "The university list could not be loaded. Check that the Supabase migrations are applied and active universities are readable.";
+      } else {
+        universities = (univRows ?? []) as University[];
+      }
+
+      if (settingsError) {
+        console.error("Failed to load campus registration settings:", settingsError);
+        dataLoadWarning ??=
+          "Some campus-specific registration requirements could not be loaded. Please contact support before creating an account.";
+      }
+
       for (const s of settingsRows ?? []) {
         settingsByUniversity[s.university_id] = {
           require_matric_number: s.require_matric_number,
@@ -62,6 +79,7 @@ export default async function RegisterPage() {
               universities={universities}
               settingsByUniversity={settingsByUniversity}
               supabaseReady={supabaseReady}
+              dataLoadWarning={dataLoadWarning}
             />
 
             <div className={styles.authFooterRow}>

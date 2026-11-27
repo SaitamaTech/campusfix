@@ -113,10 +113,12 @@ export function RegisterForm({
   universities,
   settingsByUniversity,
   supabaseReady,
+  dataLoadWarning,
 }: {
   universities: University[];
   settingsByUniversity: Record<string, Pick<CampusSettings, "require_matric_number" | "allowed_email_domains">>;
   supabaseReady: boolean;
+  dataLoadWarning: string | null;
 }) {
   const [state, action, pending] = useActionState(registerAction, INITIAL_STATE);
   const countries = Array.from(new Set(universities.map((university) => university.country)))
@@ -138,6 +140,18 @@ export function RegisterForm({
         <Alert variant="warning" title="Database Setup Required">
           Supabase environment variables are not configured yet. Configure{" "}
           <code>.env.local</code> and run the SQL migrations before creating accounts.
+        </Alert>
+      )}
+
+      {supabaseReady && dataLoadWarning && (
+        <Alert variant="warning" title="Registration data could not be fully loaded">
+          {dataLoadWarning}
+        </Alert>
+      )}
+
+      {supabaseReady && !dataLoadWarning && universities.length === 0 && (
+        <Alert variant="info" title="No universities registered yet">
+          Add an active university record in Supabase before students can register.
         </Alert>
       )}
 

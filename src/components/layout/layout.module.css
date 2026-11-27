@@ -4,7 +4,7 @@
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--bg-glass);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border-subtle);
@@ -250,7 +250,7 @@
 .topbar {
   height: var(--topbar-height);
   border-bottom: 1px solid var(--border-subtle);
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--bg-glass);
   backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
@@ -296,7 +296,7 @@
   position: fixed;
   inset: 0;
   z-index: 50;
-  background: rgba(15, 23, 42, 0.48);
+  background: var(--overlay-scrim);
   display: flex;
 }
 

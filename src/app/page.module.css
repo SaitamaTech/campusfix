@@ -33,7 +33,7 @@
 }
 
 .heroAccent {
-  background: linear-gradient(120deg, #183d5a 10%, #245b82 55%, #0f766e 100%);
+  background: var(--brand-gradient);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -70,7 +70,7 @@
 
 /* Hero Preview Panel */
 .previewShell {
-  background: linear-gradient(160deg, #ffffff, #f8fafc);
+  background: linear-gradient(160deg, var(--bg-surface), var(--bg-muted));
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xl);
   padding: 20px;
@@ -119,7 +119,7 @@
 }
 
 .timelineStepDone {
-  border-color: #b9e3ca;
+  border-color: var(--status-success-border);
   color: var(--status-success);
 }
 
@@ -212,7 +212,11 @@
 .ctaBanner {
   border-radius: var(--radius-xl);
   padding: 44px;
-  background: linear-gradient(135deg, #eaf2f8 0%, #e8f4f2 100%);
+  background: linear-gradient(
+    135deg,
+    var(--accent-primary-soft) 0%,
+    var(--accent-highlight-soft) 100%
+  );
   border: 1px solid var(--border-default);
   display: flex;
   align-items: center;

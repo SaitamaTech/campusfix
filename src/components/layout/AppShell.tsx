@@ -21,6 +21,7 @@ import {
   X,
 } from "lucide-react";
 import { BrandLogo } from "./BrandLogo";
+import { ThemeToggle } from "./ThemeToggle";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { logoutAction } from "@/app/actions/auth";
@@ -190,6 +191,7 @@ export function AppShell({
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <ThemeToggle />
             {profile.role === "student" && (
               <Button href="/report" variant="primary" size="sm">
                 <PlusCircle size={15} />

@@ -31,8 +31,58 @@ interface RecentReport {
   created_at: string;
 }
 
+interface DashboardMetrics {
+  total_campus_reports: number | string;
+  resolved_reports: number | string;
+  under_review_reports: number | string;
+  awaiting_action_reports: number | string;
+  high_priority_count: number | string;
+  my_reports_count: number | string;
+  recent_reports: RecentReport[];
+}
+
+function isRecentReport(value: unknown): value is RecentReport {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const report = value as Record<string, unknown>;
+  return (
+    typeof report.id === "string" &&
+    typeof report.reference_code === "string" &&
+    typeof report.title === "string" &&
+    typeof report.status === "string" &&
+    typeof report.severity === "string" &&
+    typeof report.created_at === "string"
+  );
+}
+
+function isDashboardMetrics(value: unknown): value is DashboardMetrics {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const metrics = value as Record<string, unknown>;
+  const counts = [
+    metrics.total_campus_reports,
+    metrics.resolved_reports,
+    metrics.under_review_reports,
+    metrics.awaiting_action_reports,
+    metrics.high_priority_count,
+    metrics.my_reports_count,
+  ];
+
+  return (
+    counts.every(
+      (count) => typeof count === "number" || typeof count === "string"
+    ) &&
+    Array.isArray(metrics.recent_reports) &&
+    metrics.recent_reports.every(isRecentReport)
+  );
+}
+
 export default async function StudentDashboardPage() {
-  const ctx = await requireAuthenticatedContext();
+  const ctx = await requireAuthenticatedContext({ includeUniversity: false });
   const supabase = await createClient();
 
   let totalCampusReports = 0;
@@ -45,68 +95,22 @@ export default async function StudentDashboardPage() {
   let dataUnavailable = false;
 
   if (supabase && ctx.profile.university_id) {
-    const universityId = ctx.profile.university_id;
-    const results = await Promise.all([
-      supabase
-        .from("incidents")
-        .select("id", { count: "exact", head: true })
-        .eq("university_id", universityId),
-      supabase
-        .from("incidents")
-        .select("id", { count: "exact", head: true })
-        .eq("university_id", universityId)
-        .eq("status", "resolved"),
-      supabase
-        .from("incidents")
-        .select("id", { count: "exact", head: true })
-        .eq("university_id", universityId)
-        .eq("status", "under_review"),
-      supabase
-        .from("incidents")
-        .select("id", { count: "exact", head: true })
-        .eq("university_id", universityId)
-        .in("status", ["submitted", "approved", "assigned"]),
-      supabase
-        .from("incidents")
-        .select("id", { count: "exact", head: true })
-        .eq("university_id", universityId)
-        .in("severity", ["high", "critical"])
-        .neq("status", "resolved")
-        .neq("status", "rejected"),
-      supabase
-        .from("incidents")
-        .select("id", { count: "exact", head: true })
-        .eq("reporter_id", ctx.userId),
-      supabase
-        .from("incidents")
-        .select("id, reference_code, title, status, severity, created_at")
-        .eq("university_id", universityId)
-        .order("created_at", { ascending: false })
-        .limit(5),
-    ]);
+    const { data, error } = await supabase.rpc("get_student_dashboard_metrics");
+    const metricsRow: unknown = data?.[0];
+    const metrics = isDashboardMetrics(metricsRow) ? metricsRow : null;
 
-    const [
-      totalResult,
-      resolvedResult,
-      reviewResult,
-      awaitingResult,
-      highPriorityResult,
-      myReportsResult,
-      recentResult,
-    ] = results;
-    const queryErrors = results.flatMap((result) => result.error ? [result.error] : []);
-    dataUnavailable = queryErrors.length > 0;
-    if (dataUnavailable) {
-      console.error("Campus dashboard data query failed:", queryErrors);
+    if (error || !metrics) {
+      dataUnavailable = true;
+      console.error("Campus dashboard data query failed:", error ?? "No metrics returned.");
+    } else {
+      totalCampusReports = Number(metrics.total_campus_reports);
+      resolvedReports = Number(metrics.resolved_reports);
+      underReviewReports = Number(metrics.under_review_reports);
+      awaitingActionReports = Number(metrics.awaiting_action_reports);
+      highPriorityCount = Number(metrics.high_priority_count);
+      myReportsCount = Number(metrics.my_reports_count);
+      recentReports = metrics.recent_reports;
     }
-
-    totalCampusReports = totalResult.count ?? 0;
-    resolvedReports = resolvedResult.count ?? 0;
-    underReviewReports = reviewResult.count ?? 0;
-    awaitingActionReports = awaitingResult.count ?? 0;
-    highPriorityCount = highPriorityResult.count ?? 0;
-    myReportsCount = myReportsResult.count ?? 0;
-    recentReports = recentResult.data ?? [];
   }
 
   const firstName = ctx.profile.full_name.trim().split(/\s+/)[0] || "there";

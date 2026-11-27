@@ -11,8 +11,33 @@ export const metadata = {
   title: "Campus Admin Dashboard",
 };
 
+interface AdminDashboardMetrics {
+  total_reports: number | string;
+  pending_reports: number | string;
+  in_progress_reports: number | string;
+  resolved_reports: number | string;
+  flagged_reports: number | string;
+}
+
+function isAdminDashboardMetrics(value: unknown): value is AdminDashboardMetrics {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const metrics = value as Record<string, unknown>;
+  return [
+    metrics.total_reports,
+    metrics.pending_reports,
+    metrics.in_progress_reports,
+    metrics.resolved_reports,
+    metrics.flagged_reports,
+  ].every((count) => typeof count === "number" || typeof count === "string");
+}
+
 export default async function AdminDashboardPage() {
-  const ctx = await requireRole(["campus_admin", "super_admin"]);
+  const ctx = await requireRole(["campus_admin", "super_admin"], {
+    includeUniversity: false,
+  });
   const supabase = await createClient();
 
   let totalReports = 0;
@@ -20,42 +45,23 @@ export default async function AdminDashboardPage() {
   let inProgressReports = 0;
   let resolvedReports = 0;
   let flaggedReports = 0;
+  let dataUnavailable = false;
 
   if (supabase && ctx.profile.university_id) {
-    const univId = ctx.profile.university_id;
-    const [totalRes, pendingRes, progressRes, resolvedRes, flaggedRes] =
-      await Promise.all([
-        supabase
-          .from("incidents")
-          .select("id", { count: "exact", head: true })
-          .eq("university_id", univId),
-        supabase
-          .from("incidents")
-          .select("id", { count: "exact", head: true })
-          .eq("university_id", univId)
-          .in("status", ["submitted", "under_review"]),
-        supabase
-          .from("incidents")
-          .select("id", { count: "exact", head: true })
-          .eq("university_id", univId)
-          .in("status", ["assigned", "in_progress"]),
-        supabase
-          .from("incidents")
-          .select("id", { count: "exact", head: true })
-          .eq("university_id", univId)
-          .eq("status", "resolved"),
-        supabase
-          .from("incidents")
-          .select("id", { count: "exact", head: true })
-          .eq("university_id", univId)
-          .eq("is_flagged", true),
-      ]);
+    const { data, error } = await supabase.rpc("get_campus_admin_dashboard_metrics");
+    const metricsRow: unknown = data?.[0];
+    const metrics = isAdminDashboardMetrics(metricsRow) ? metricsRow : null;
 
-    totalReports = totalRes.count ?? 0;
-    pendingReports = pendingRes.count ?? 0;
-    inProgressReports = progressRes.count ?? 0;
-    resolvedReports = resolvedRes.count ?? 0;
-    flaggedReports = flaggedRes.count ?? 0;
+    if (error || !metrics) {
+      dataUnavailable = true;
+      console.error("Campus admin dashboard metrics query failed:", error ?? "No metrics returned.");
+    } else {
+      totalReports = Number(metrics.total_reports);
+      pendingReports = Number(metrics.pending_reports);
+      inProgressReports = Number(metrics.in_progress_reports);
+      resolvedReports = Number(metrics.resolved_reports);
+      flaggedReports = Number(metrics.flagged_reports);
+    }
   }
 
   return (
@@ -65,6 +71,12 @@ export default async function AdminDashboardPage() {
       pageTitle="Campus Administrator Console"
     >
       <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        {dataUnavailable && (
+          <Alert variant="warning" title="Dashboard metrics could not be loaded">
+            The workspace is available, but report counts may be incomplete. Please refresh in a moment.
+          </Alert>
+        )}
+
         <Card highlighted>
           <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
             <Shield size={22} color="var(--accent-highlight)" />

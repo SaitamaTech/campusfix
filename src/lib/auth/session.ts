@@ -11,7 +11,9 @@ export interface AuthenticatedContext {
   university: University | null;
 }
 
-export async function getAuthenticatedContext(): Promise<AuthenticatedContext | null> {
+export async function getAuthenticatedContext(
+  options: { includeUniversity?: boolean } = {}
+): Promise<AuthenticatedContext | null> {
   const supabase = await createClient();
   if (!supabase) {
     return null;
@@ -45,7 +47,7 @@ export async function getAuthenticatedContext(): Promise<AuthenticatedContext | 
       : null;
 
   let university: University | null = null;
-  if (profile.university_id) {
+  if (options.includeUniversity !== false && profile.university_id) {
     const { data: univ } = await supabase
       .from("universities")
       .select("*")
@@ -64,9 +66,9 @@ export async function getAuthenticatedContext(): Promise<AuthenticatedContext | 
 }
 
 export async function requireAuthenticatedContext(
-  options: { allowUnassignedCampus?: boolean } = {}
+  options: { allowUnassignedCampus?: boolean; includeUniversity?: boolean } = {}
 ): Promise<AuthenticatedContext> {
-  const ctx = await getAuthenticatedContext();
+  const ctx = await getAuthenticatedContext(options);
   if (!ctx) {
     redirect("/login");
   }
@@ -83,8 +85,11 @@ export async function requireAuthenticatedContext(
   return ctx;
 }
 
-export async function requireRole(allowedRoles: UserRole[]): Promise<AuthenticatedContext> {
-  const ctx = await requireAuthenticatedContext();
+export async function requireRole(
+  allowedRoles: UserRole[],
+  options: { includeUniversity?: boolean } = {}
+): Promise<AuthenticatedContext> {
+  const ctx = await requireAuthenticatedContext(options);
   if (!allowedRoles.includes(ctx.profile.role)) {
     redirect(getDefaultRouteForRole(ctx.profile.role));
   }

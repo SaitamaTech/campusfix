@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useFormStatus } from "react-dom";
 import { Camera, CheckCircle2, MapPin, ShieldCheck, ArrowRight, ArrowLeft } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -41,6 +42,17 @@ const ONBOARDING_SLIDES = [
     ],
   },
 ];
+
+function OnboardingSubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button type="submit" variant="primary" disabled={pending}>
+      {pending ? "Setting up your dashboard..." : "Continue to CampusFix"}
+      {!pending && <ArrowRight size={15} />}
+    </Button>
+  );
+}
 
 export function OnboardingFlow({
   studentName,
@@ -163,7 +175,7 @@ export function OnboardingFlow({
               <FormField
                 label="University or Community Name"
                 htmlFor="onboarding-institution"
-                hint="This name will appear on your dashboard."
+                hint="Required to finish setup. This name will appear on your dashboard."
               >
                 <Input
                   id="onboarding-institution"
@@ -176,13 +188,7 @@ export function OnboardingFlow({
                   maxLength={120}
                 />
               </FormField>
-              <Button
-                type="submit"
-                variant="primary"
-              >
-                Continue to CampusFix
-                <ArrowRight size={15} />
-              </Button>
+              <OnboardingSubmitButton />
             </form>
           )}
         </div>

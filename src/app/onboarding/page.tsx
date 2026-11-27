@@ -1,8 +1,8 @@
 import React from "react";
 import { requireAuthenticatedContext } from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
 import { OnboardingFlow } from "@/components/auth/OnboardingFlow";
 import { BrandLogo } from "@/components/layout/BrandLogo";
+import { DEFAULT_CAMPUS_NAME } from "@/lib/campus";
 
 export const metadata = {
   title: "Student Onboarding",
@@ -15,33 +15,13 @@ export default async function OnboardingPage({
 }) {
   const ctx = await requireAuthenticatedContext({ allowUnassignedCampus: true });
   const params = await searchParams;
-  const needsUniversitySelection = !ctx.profile.university_id;
-  let countries: string[] = [];
-  let countryLoadWarning: string | null = null;
-
-  if (needsUniversitySelection) {
-    const supabase = await createClient();
-    if (!supabase) {
-      countryLoadWarning = "CampusFix could not connect to the university directory.";
-    } else {
-      const { data, error } = await supabase.rpc("get_active_university_countries");
-      if (error) {
-        console.error("Could not load countries during onboarding:", error);
-        countryLoadWarning =
-          "The university directory could not be loaded. Apply the Supabase migrations and refresh.";
-      } else {
-        countries = (data ?? []).map((row: { country: string }) => row.country);
-      }
-    }
-  }
 
   const onboardingErrors: Record<string, string> = {
-    choose_university: "Choose your country and university to continue.",
-    university_unavailable: "That university is no longer available. Choose another one.",
+    university_unavailable: "The default campus is unavailable. Please try again later.",
     campus_settings_unavailable:
-      "Campus registration requirements could not be loaded. Please try again.",
+      "Campus registration requirements could not be loaded. Please try again later.",
     campus_requires_registration:
-      "This campus requires a matriculation number. Use the standard registration form for this campus.",
+      "This campus requires a matriculation number. Complete registration with your matriculation number before continuing.",
     institution_email_required:
       "Use an email address from one of this campus's approved institutional domains.",
     profile_update_failed: "Your campus could not be saved. Please try again.",
@@ -76,10 +56,7 @@ export default async function OnboardingPage({
       >
         <OnboardingFlow
           studentName={ctx.profile.full_name}
-          universityName={ctx.university?.name ?? null}
-          needsUniversitySelection={needsUniversitySelection}
-          countries={countries}
-          countryLoadWarning={countryLoadWarning}
+          campusName={ctx.university?.name ?? DEFAULT_CAMPUS_NAME}
           onboardingError={onboardingError}
         />
       </main>

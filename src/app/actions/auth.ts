@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAppUrl } from "@/lib/supabase/env";
 import { checkRateLimit } from "@/lib/security/rate-limit";
 import { getDefaultRouteForRole } from "@/lib/auth/rbac";
+import { DEFAULT_CAMPUS_SLUG } from "@/lib/campus";
 import {
   forgotPasswordSchema,
   loginSchema,
@@ -58,7 +59,6 @@ export async function registerAction(
     fullName: formData.get("fullName"),
     email: formData.get("email"),
     password: formData.get("password"),
-    universityId: formData.get("universityId"),
     matricNumber: formData.get("matricNumber"),
     department: formData.get("department"),
     faculty: formData.get("faculty"),
@@ -84,19 +84,18 @@ export async function registerAction(
 
   const data = parsed.data;
 
-  // Verify university exists & enforce university student verification rules
+  // Resolve the configured single campus and enforce its registration rules.
   const { data: university, error: univErr } = await supabase
     .from("universities")
     .select("id, name, is_active")
-    .eq("id", data.universityId)
+    .eq("slug", DEFAULT_CAMPUS_SLUG)
     .eq("is_active", true)
     .single();
 
   if (univErr || !university) {
     return {
       status: "error",
-      message: "Selected university is unavailable.",
-      fieldErrors: { universityId: "Please choose an active university." },
+      message: "The default campus is unavailable. Please try again later.",
     };
   }
 
@@ -150,7 +149,7 @@ export async function registerAction(
     password: data.password,
     options: {
       emailRedirectTo: `${appUrl}/auth/callback?next=/onboarding`,
-      // Role metadata is omitted; SQL only promotes the first verified institutional-domain account.
+      // Role metadata is omitted; the database trigger assigns the student role.
       data: {
         full_name: data.fullName,
         university_id: university.id,
@@ -399,7 +398,7 @@ export async function resetPasswordAction(
   redirect("/login?reset=success");
 }
 
-export async function completeOnboardingAction(formData: FormData): Promise<void> {
+export async function completeOnboardingAction(): Promise<void> {
   const supabase = await createClient();
   if (!supabase) {
     redirect("/login");
@@ -433,19 +432,10 @@ export async function completeOnboardingAction(formData: FormData): Promise<void
 
   let universityId = profile.university_id;
   if (!universityId) {
-    const requestedUniversityId = String(formData.get("universityId") ?? "").trim();
-    if (
-      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-        requestedUniversityId
-      )
-    ) {
-      redirect("/onboarding?error=choose_university");
-    }
-
     const { data: university, error: universityError } = await supabase
       .from("universities")
       .select("id")
-      .eq("id", requestedUniversityId)
+      .eq("slug", DEFAULT_CAMPUS_SLUG)
       .eq("is_active", true)
       .single();
 

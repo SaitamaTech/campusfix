@@ -332,11 +332,11 @@ export default async function LandingPage() {
                   <Building2 size={20} />
                 </div>
                 <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "8px" }}>
-                  Multi-University Ready
+                  Campus-First Platform
                 </h3>
                 <p style={{ fontSize: "13.5px", color: "var(--text-secondary)" }}>
-                  Built for independent campuses and ready to scale across universities
-                  and countries.
+                  Focused on University of Ilesa today, with a campus-first foundation
+                  for future expansion.
                 </p>
               </Card>
             </div>

@@ -27,7 +27,7 @@ CampusFix helps university communities report campus infrastructure problems, ve
 
 2. Copy `.env.example` to `.env.local` and set your Supabase project URL and anon key. Keep service-role keys server-only.
 
-3. Apply the SQL migrations in `supabase/migrations/` to your Supabase project in filename order. Connecting Supabase to Vercel does not apply database migrations automatically. Run `0005` through `0009` as five separate queries, in order, after `0001` through `0004`.
+3. Apply the SQL migrations in `supabase/migrations/` to your Supabase project in filename order. Connecting Supabase to Vercel does not apply database migrations automatically.
 
 4. Start the development server:
 
@@ -44,10 +44,6 @@ npm run lint
 npm run build
 ```
 
-Campus locations and exact map coordinates are institution-specific. Configure verified campus locations in Supabase before relying on GPS-based map context in a live deployment.
+CampusFix is currently configured for a single campus: University of Ilesa. New accounts are assigned to that campus automatically. Its seed data and default settings are included in `supabase/migrations/0003_storage_and_seed.sql`; campus locations and exact map coordinates remain institution-specific and should be configured before relying on GPS-based map context in a live deployment.
 
-## University directory
-
-Migrations `0005`–`0009` import a pinned snapshot of the community-maintained [Hipo university directory](https://github.com/Hipo/university-domains-list/tree/80e101ad7f77ef24f65d5c2bc6f22f88e85d21b3): 10,254 deduplicated name/country entries across 201 country labels. Run each file as a separate query, in numeric order, to stay within the Supabase SQL Editor size limit. These migrations are safe to retry if a query fails partway through. This is a useful starting directory, not a complete or authoritative list of accredited institutions. Some records do not include state or city data, and those fields are marked “Not specified.” The dataset's MIT license is included at [supabase/third-party/HIPO-LICENSE.txt](supabase/third-party/HIPO-LICENSE.txt).
-
-For imported campuses, the first account with a Supabase-confirmed email matching one of the listed institutional domains is automatically made campus admin. This confirms control of an email address, not employment or institutional authorization. Review the campus and domain before relying on admin actions in a production deployment; a super admin can reassign campus administration.
+If you previously applied the removed university-directory migrations to Supabase, deleting their files from this repository does not remove data or schema already applied to your database. New registrations and accounts without a campus use the seeded University of Ilesa campus; existing account assignments are preserved.

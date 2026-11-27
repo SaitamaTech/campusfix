@@ -17,7 +17,6 @@ export const registerSchema = z.object({
     .max(128, "Password is too long.")
     .regex(/[A-Za-z]/, "Password must include at least one letter.")
     .regex(/[0-9]/, "Password must include at least one number."),
-  universityId: z.string().uuid("Please select a valid university."),
   matricNumber: z
     .string()
     .trim()

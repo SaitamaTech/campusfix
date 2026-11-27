@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useActionState, useEffect, useState } from "react";
+import React, { useActionState } from "react";
 import Link from "next/link";
-import { ArrowRight, KeyRound, Mail, UserPlus } from "lucide-react";
+import { ArrowRight, Building2, KeyRound, Mail, UserPlus } from "lucide-react";
 import {
   forgotPasswordAction,
   googleSignInAction,
@@ -14,7 +14,6 @@ import {
 import { Button } from "@/components/ui/Button";
 import { FormField, Input, Select } from "@/components/ui/FormField";
 import { Alert } from "@/components/ui/Alert";
-import type { CampusSettings, University } from "@/types/database";
 import styles from "./auth.module.css";
 
 const INITIAL_STATE: AuthActionState = { status: "idle" };
@@ -28,11 +27,6 @@ const LEVEL_OPTIONS = [
   "600 Level",
   "Postgraduate",
 ];
-
-type RegistrationUniversity = Pick<
-  University,
-  "id" | "name" | "short_name" | "country"
->;
 
 export function LoginForm({
   nextPath,
@@ -115,117 +109,19 @@ export function LoginForm({
 }
 
 export function RegisterForm({
-  countries,
+  campusName,
+  matricRequired,
+  allowedEmailDomains,
   supabaseReady,
   dataLoadWarning,
 }: {
-  countries: string[];
+  campusName: string;
+  matricRequired: boolean;
+  allowedEmailDomains: string[];
   supabaseReady: boolean;
   dataLoadWarning: string | null;
 }) {
   const [state, action, pending] = useActionState(registerAction, INITIAL_STATE);
-  const [selectedCountry, setSelectedCountry] = useState("");
-  const [universitiesInCountry, setUniversitiesInCountry] = useState<
-    RegistrationUniversity[]
-  >([]);
-  const [selectedUnivId, setSelectedUnivId] = useState("");
-  const [loadingUniversities, setLoadingUniversities] = useState(false);
-  const [universityLoadError, setUniversityLoadError] = useState<string | null>(null);
-  const [campusSettings, setCampusSettings] = useState<
-    Pick<CampusSettings, "require_matric_number" | "allowed_email_domains"> | null
-  >(null);
-  const [loadingSettings, setLoadingSettings] = useState(false);
-  const [settingsLoadError, setSettingsLoadError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!selectedCountry || !supabaseReady || dataLoadWarning) {
-      return;
-    }
-
-    const controller = new AbortController();
-
-    async function loadUniversities() {
-      try {
-        const response = await fetch(
-          `/api/universities?country=${encodeURIComponent(selectedCountry)}`,
-          { signal: controller.signal }
-        );
-        const result = (await response.json()) as {
-          universities?: RegistrationUniversity[];
-          error?: string;
-        };
-        if (!response.ok) {
-          throw new Error(result.error ?? "Could not load universities.");
-        }
-
-        const universities = result.universities ?? [];
-        setUniversitiesInCountry(universities);
-        setSelectedUnivId("");
-      } catch (error) {
-        if (controller.signal.aborted) {
-          return;
-        }
-        console.error("Failed to load universities for the selected country:", error);
-        setUniversityLoadError(
-          "Universities for this country could not be loaded. Try again or refresh the page."
-        );
-      } finally {
-        if (!controller.signal.aborted) {
-          setLoadingUniversities(false);
-        }
-      }
-    }
-
-    void loadUniversities();
-    return () => controller.abort();
-  }, [selectedCountry, supabaseReady, dataLoadWarning]);
-
-  useEffect(() => {
-    if (!selectedUnivId || !supabaseReady) {
-      return;
-    }
-
-    const controller = new AbortController();
-
-    async function loadCampusSettings() {
-      try {
-        const response = await fetch(
-          `/api/universities?universityId=${encodeURIComponent(selectedUnivId)}`,
-          { signal: controller.signal }
-        );
-        const result = (await response.json()) as {
-          settings?: Pick<
-            CampusSettings,
-            "require_matric_number" | "allowed_email_domains"
-          > | null;
-          error?: string;
-        };
-        if (!response.ok || !result.settings) {
-          throw new Error(result.error ?? "Campus settings are missing.");
-        }
-
-        setCampusSettings(result.settings);
-      } catch (error) {
-        if (controller.signal.aborted) {
-          return;
-        }
-        console.error("Failed to load registration settings for the selected campus:", error);
-        setSettingsLoadError(
-          "Campus registration requirements could not be loaded. Please refresh before registering."
-        );
-      } finally {
-        if (!controller.signal.aborted) {
-          setLoadingSettings(false);
-        }
-      }
-    }
-
-    void loadCampusSettings();
-    return () => controller.abort();
-  }, [selectedUnivId, supabaseReady]);
-
-  const matricRequired = campusSettings?.require_matric_number ?? false;
-  const allowedDomains = campusSettings?.allowed_email_domains ?? [];
 
   return (
     <form action={action} className={styles.formStack} noValidate>
@@ -242,24 +138,6 @@ export function RegisterForm({
         </Alert>
       )}
 
-      {supabaseReady && !dataLoadWarning && countries.length === 0 && (
-        <Alert variant="info" title="No universities registered yet">
-          Apply the global university directory migration before students can register.
-        </Alert>
-      )}
-
-      {universityLoadError && (
-        <Alert variant="danger" title="University list unavailable">
-          {universityLoadError}
-        </Alert>
-      )}
-
-      {settingsLoadError && (
-        <Alert variant="danger" title="Campus requirements unavailable">
-          {settingsLoadError}
-        </Alert>
-      )}
-
       {state.status === "error" && state.message && (
         <Alert variant="danger">{state.message}</Alert>
       )}
@@ -270,85 +148,15 @@ export function RegisterForm({
         </Alert>
       )}
 
-      <div className={styles.formRow2}>
-        <FormField label="Country" htmlFor="reg-country">
-          <Select
-            id="reg-country"
-            name="country"
-            value={selectedCountry}
-            onChange={(event) => {
-              const country = event.target.value;
-              setSelectedCountry(country);
-              setUniversitiesInCountry([]);
-              setSelectedUnivId("");
-              setUniversityLoadError(null);
-              setLoadingUniversities(Boolean(country && supabaseReady && !dataLoadWarning));
-              setCampusSettings(null);
-              setSettingsLoadError(null);
-              setLoadingSettings(false);
-            }}
-            required
-            disabled={!supabaseReady || Boolean(dataLoadWarning) || countries.length === 0}
-          >
-            <option value="">Select a country</option>
-            {countries.map((country) => (
-              <option key={country} value={country}>
-                {country}
-              </option>
-            ))}
-          </Select>
-        </FormField>
-
-        <FormField
-          label="University"
-          htmlFor="reg-university"
-          error={state.fieldErrors?.universityId}
-          hint={
-            loadingUniversities
-              ? "Loading universities..."
-              : selectedCountry
-                ? `${universitiesInCountry.length} universities listed in ${selectedCountry}`
-                : "Select a country to see its universities."
-          }
-        >
-          <Select
-            id="reg-university"
-            name="universityId"
-            value={selectedUnivId}
-            onChange={(event) => {
-              const universityId = event.target.value;
-              setSelectedUnivId(universityId);
-              setCampusSettings(null);
-              setSettingsLoadError(null);
-              setLoadingSettings(Boolean(universityId && supabaseReady));
-            }}
-            required
-            disabled={
-              !selectedCountry ||
-              loadingUniversities ||
-              Boolean(universityLoadError) ||
-              universitiesInCountry.length === 0
-            }
-            hasError={Boolean(state.fieldErrors?.universityId)}
-          >
-            <option value="">
-              {loadingUniversities
-                ? "Loading universities..."
-                : universityLoadError
-                  ? "University list unavailable"
-                  : selectedCountry
-                        ? universitiesInCountry.length > 0
-                          ? "Select a university"
-                          : "No universities available in this country"
-                    : "Select a country first"}
-            </option>
-            {universitiesInCountry.map((university) => (
-              <option key={university.id} value={university.id}>
-                {university.name} ({university.short_name})
-              </option>
-            ))}
-          </Select>
-        </FormField>
+      <div className={styles.campusBanner}>
+        <span className={styles.campusIcon} aria-hidden="true">
+          <Building2 size={18} />
+        </span>
+        <div className={styles.campusDetails}>
+          <span className={styles.campusLabel}>Your campus</span>
+          <strong className={styles.campusName}>{campusName}</strong>
+          <span className={styles.campusHint}>Your account will be set up here.</span>
+        </div>
       </div>
 
       <div className={styles.formRow2}>
@@ -389,11 +197,9 @@ export function RegisterForm({
         label="Email Address"
         htmlFor="reg-email"
         hint={
-          loadingSettings
-            ? "Loading campus registration requirements..."
-            : allowedDomains.length > 0
-              ? `Approved institutional domains: ${allowedDomains.join(", ")}`
-              : "A verification link will be sent to this email address."
+          allowedEmailDomains.length > 0
+            ? `Approved institutional domains: ${allowedEmailDomains.join(", ")}`
+            : "A verification link will be sent to this email address."
         }
         error={state.fieldErrors?.email}
       >
@@ -486,12 +292,7 @@ export function RegisterForm({
         disabled={
           pending ||
           !supabaseReady ||
-          Boolean(dataLoadWarning) ||
-          Boolean(universityLoadError) ||
-          Boolean(settingsLoadError) ||
-          loadingUniversities ||
-          loadingSettings ||
-          !selectedUnivId
+          Boolean(dataLoadWarning)
         }
       >
         <UserPlus size={17} />

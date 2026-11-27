@@ -53,7 +53,7 @@ export default async function NotificationsPage() {
                   </div>
                   <p style={{ color: "var(--text-secondary)", fontSize: "13px", marginTop: "4px" }}>{notification.message}</p>
                   {notification.link && (
-                    <a href={notification.link} style={{ color: "#7dd3fc", fontSize: "12px" }}>View report</a>
+                    <a href={notification.link} style={{ color: "var(--status-info)", fontSize: "12px" }}>View report</a>
                   )}
                 </div>
                 {!notification.is_read && (

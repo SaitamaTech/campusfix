@@ -73,7 +73,7 @@ export function LoginForm({
           name="email"
           type="email"
           autoComplete="email"
-          placeholder="student@unilesa.edu.ng"
+          placeholder="you@university.edu"
           required
           hasError={Boolean(state.fieldErrors?.email)}
         />
@@ -119,7 +119,15 @@ export function RegisterForm({
   supabaseReady: boolean;
 }) {
   const [state, action, pending] = useActionState(registerAction, INITIAL_STATE);
-  const [selectedUnivId, setSelectedUnivId] = useState(universities[0]?.id ?? "");
+  const countries = Array.from(new Set(universities.map((university) => university.country)))
+    .sort((a, b) => a.localeCompare(b));
+  const [selectedCountry, setSelectedCountry] = useState(countries[0] ?? "");
+  const universitiesInCountry = universities.filter(
+    (university) => university.country === selectedCountry
+  );
+  const [selectedUnivId, setSelectedUnivId] = useState(
+    universitiesInCountry[0]?.id ?? ""
+  );
   const activeSettings = settingsByUniversity[selectedUnivId];
   const matricRequired = activeSettings?.require_matric_number ?? false;
   const allowedDomains = activeSettings?.allowed_email_domains ?? [];
@@ -143,30 +151,59 @@ export function RegisterForm({
         </Alert>
       )}
 
-      <FormField
-        label="University"
-        htmlFor="reg-university"
-        error={state.fieldErrors?.universityId}
-      >
-        <Select
-          id="reg-university"
-          name="universityId"
-          value={selectedUnivId}
-          onChange={(e) => setSelectedUnivId(e.target.value)}
-          required
-          hasError={Boolean(state.fieldErrors?.universityId)}
+      <div className={styles.formRow2}>
+        <FormField label="Country" htmlFor="reg-country">
+          <Select
+            id="reg-country"
+            name="country"
+            value={selectedCountry}
+            onChange={(event) => {
+              const country = event.target.value;
+              setSelectedCountry(country);
+              setSelectedUnivId(
+                universities.find((university) => university.country === country)?.id ?? ""
+              );
+            }}
+            required
+            disabled={countries.length === 0}
+          >
+            {countries.length === 0 ? (
+              <option value="">No registered countries yet</option>
+            ) : (
+              countries.map((country) => (
+                <option key={country} value={country}>{country}</option>
+              ))
+            )}
+          </Select>
+        </FormField>
+
+        <FormField
+          label="University"
+          htmlFor="reg-university"
+          error={state.fieldErrors?.universityId}
+          hint={`${universitiesInCountry.length} registered campus${universitiesInCountry.length === 1 ? "" : "es"} in ${selectedCountry || "this country"}`}
         >
-          {universities.length === 0 ? (
-            <option value="">No active universities configured</option>
-          ) : (
-            universities.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.name} ({u.short_name})
-              </option>
-            ))
-          )}
-        </Select>
-      </FormField>
+          <Select
+            id="reg-university"
+            name="universityId"
+            value={selectedUnivId}
+            onChange={(event) => setSelectedUnivId(event.target.value)}
+            required
+            disabled={universitiesInCountry.length === 0}
+            hasError={Boolean(state.fieldErrors?.universityId)}
+          >
+            {universitiesInCountry.length === 0 ? (
+              <option value="">No universities available in this country</option>
+            ) : (
+              universitiesInCountry.map((university) => (
+                <option key={university.id} value={university.id}>
+                  {university.name} ({university.short_name})
+                </option>
+              ))
+            )}
+          </Select>
+        </FormField>
+      </div>
 
       <div className={styles.formRow2}>
         <FormField
@@ -217,7 +254,7 @@ export function RegisterForm({
           name="email"
           type="email"
           autoComplete="email"
-          placeholder="you@unilesa.edu.ng"
+          placeholder="you@university.edu"
           required
           hasError={Boolean(state.fieldErrors?.email)}
         />
@@ -329,7 +366,7 @@ export function ForgotPasswordForm() {
           name="email"
           type="email"
           autoComplete="email"
-          placeholder="student@unilesa.edu.ng"
+          placeholder="you@university.edu"
           required
           hasError={Boolean(state.fieldErrors?.email)}
         />

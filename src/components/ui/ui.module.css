@@ -55,14 +55,14 @@
 }
 
 .btnPrimary {
-  background: linear-gradient(135deg, var(--accent-primary) 0%, #be123c 100%);
+  background: var(--accent-primary);
   color: var(--text-inverse);
-  box-shadow: var(--glow-red);
+  box-shadow: var(--shadow-sm);
 }
 
 .btnPrimary:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--accent-primary-hover) 0%, var(--accent-primary) 100%);
-  box-shadow: 0 10px 30px rgba(225, 29, 72, 0.38);
+  background: var(--accent-primary-hover);
+  box-shadow: var(--shadow-md);
 }
 
 .btnSecondary {
@@ -82,24 +82,24 @@
 }
 
 .btnGhost:hover:not(:disabled) {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--bg-muted);
   color: var(--text-primary);
 }
 
 .btnHighlight {
   background-color: var(--accent-highlight-soft);
   border-color: var(--accent-highlight-border);
-  color: #fdba74;
-  box-shadow: var(--glow-orange);
+  color: var(--accent-highlight);
+  box-shadow: none;
 }
 
 .btnHighlight:hover:not(:disabled) {
-  background-color: rgba(249, 115, 22, 0.22);
+  background-color: var(--accent-highlight-soft);
 }
 
 /* Cards */
 .card {
-  background: linear-gradient(180deg, rgba(23, 26, 33, 0.94) 0%, rgba(17, 19, 24, 0.98) 100%);
+  background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 24px;
@@ -114,7 +114,7 @@
 
 .cardHighlighted {
   border-color: var(--accent-highlight-border);
-  box-shadow: var(--glow-orange);
+  box-shadow: var(--shadow-sm);
 }
 
 .cardGlass {
@@ -196,7 +196,7 @@
 
 .fieldError {
   font-size: 12px;
-  color: #fca5a5;
+  color: var(--status-danger);
 }
 
 /* Badges */
@@ -220,45 +220,45 @@
 }
 
 .badgeNeutral {
-  background-color: rgba(148, 163, 184, 0.14);
-  border-color: rgba(148, 163, 184, 0.28);
-  color: #cbd5e1;
+  background-color: var(--bg-muted);
+  border-color: var(--border-default);
+  color: var(--text-secondary);
 }
 
 .badgeRed {
   background-color: var(--accent-primary-soft);
   border-color: var(--accent-primary-border);
-  color: #fda4af;
+  color: var(--status-danger);
 }
 
 .badgeOrange {
   background-color: var(--accent-highlight-soft);
   border-color: var(--accent-highlight-border);
-  color: #fdba74;
+  color: var(--status-warning);
 }
 
 .badgeSuccess {
   background-color: var(--status-success-soft);
-  border-color: rgba(34, 197, 94, 0.35);
-  color: #86efac;
+  border-color: #b9e3ca;
+  color: var(--status-success);
 }
 
 .badgeWarning {
   background-color: var(--status-warning-soft);
-  border-color: rgba(245, 158, 11, 0.35);
-  color: #fcd34d;
+  border-color: #f0d7a2;
+  color: var(--status-warning);
 }
 
 .badgeInfo {
   background-color: var(--status-info-soft);
-  border-color: rgba(56, 189, 248, 0.35);
-  color: #7dd3fc;
+  border-color: #c4deee;
+  color: var(--status-info);
 }
 
 .badgeViolet {
   background-color: var(--status-violet-soft);
-  border-color: rgba(167, 139, 250, 0.35);
-  color: #c4b5fd;
+  border-color: #d8cbed;
+  color: var(--status-violet);
 }
 
 /* Alerts */
@@ -284,27 +284,27 @@
 }
 
 .alertInfo {
-  background-color: rgba(56, 189, 248, 0.08);
-  border-color: rgba(56, 189, 248, 0.28);
-  color: #bae6fd;
+  background-color: var(--status-info-soft);
+  border-color: #c4deee;
+  color: var(--status-info);
 }
 
 .alertSuccess {
-  background-color: rgba(34, 197, 94, 0.09);
-  border-color: rgba(34, 197, 94, 0.3);
-  color: #bbf7d0;
+  background-color: var(--status-success-soft);
+  border-color: #b9e3ca;
+  color: var(--status-success);
 }
 
 .alertWarning {
-  background-color: rgba(249, 115, 22, 0.1);
-  border-color: rgba(249, 115, 22, 0.34);
-  color: #fed7aa;
+  background-color: var(--status-warning-soft);
+  border-color: #f0d7a2;
+  color: var(--status-warning);
 }
 
 .alertDanger {
-  background-color: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.34);
-  color: #fecaca;
+  background-color: var(--status-danger-soft);
+  border-color: #efc5c8;
+  color: var(--status-danger);
 }
 
 /* Modal */
@@ -316,7 +316,7 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background-color: rgba(5, 6, 8, 0.78);
+  background-color: rgba(15, 23, 42, 0.48);
   backdrop-filter: blur(6px);
 }
 

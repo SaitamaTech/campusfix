@@ -67,7 +67,7 @@ export default async function AdminDashboardPage() {
       <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
         <Card highlighted>
           <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
-            <Shield size={22} color="#fb923c" />
+            <Shield size={22} color="var(--accent-highlight)" />
             <div>
               <h2 style={{ fontSize: "20px", fontWeight: 800 }}>
                 {ctx.university?.name ?? "Campus Administration"}
@@ -99,28 +99,28 @@ export default async function AdminDashboardPage() {
           <Card>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
               <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>Pending Review</span>
-              <Building2 size={16} color="#f59e0b" />
+              <Building2 size={16} color="var(--status-warning)" />
             </div>
             <div className="mono" style={{ fontSize: "26px", fontWeight: 700 }}>{pendingReports}</div>
           </Card>
           <Card>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
               <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>Assigned / Active</span>
-              <Building2 size={16} color="#fb923c" />
+              <Building2 size={16} color="var(--accent-primary)" />
             </div>
             <div className="mono" style={{ fontSize: "26px", fontWeight: 700 }}>{inProgressReports}</div>
           </Card>
           <Card>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
               <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>Resolved</span>
-              <CheckCircle2 size={16} color="#22c55e" />
+              <CheckCircle2 size={16} color="var(--status-success)" />
             </div>
             <div className="mono" style={{ fontSize: "26px", fontWeight: 700 }}>{resolvedReports}</div>
           </Card>
           <Card>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
               <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>Flagged</span>
-              <Flag size={16} color="#ef4444" />
+              <Flag size={16} color="var(--status-danger)" />
             </div>
             <div className="mono" style={{ fontSize: "26px", fontWeight: 700 }}>{flaggedReports}</div>
           </Card>

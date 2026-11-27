@@ -99,7 +99,7 @@
 }
 
 .authLink {
-  color: #fda4af;
+  color: var(--accent-primary);
   font-weight: 600;
 }
 

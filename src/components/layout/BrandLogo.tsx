@@ -29,8 +29,8 @@ export function BrandLogo({ href = "/", compact = false }: BrandLogoProps) {
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #e11d48 0%, #f97316 100%)",
-          boxShadow: "0 4px 18px rgba(225, 29, 72, 0.35)",
+          background: "linear-gradient(135deg, #245b82 0%, #0f766e 100%)",
+          boxShadow: "0 4px 14px rgba(36, 91, 130, 0.2)",
           flexShrink: 0,
         }}
       >

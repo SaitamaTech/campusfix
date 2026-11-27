@@ -16,7 +16,7 @@ export default async function OnboardingPage() {
         style={{
           padding: "18px 24px",
           borderBottom: "1px solid var(--border-subtle)",
-          background: "rgba(9, 10, 13, 0.85)",
+          background: "rgba(255, 255, 255, 0.9)",
         }}
       >
         <div className="container">

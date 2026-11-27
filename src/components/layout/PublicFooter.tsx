@@ -20,7 +20,7 @@ export function PublicFooter() {
             >
               A smarter campus starts with you. Built for transparent campus issue
               reporting, community verification, and accountable maintenance workflows —
-              designed initially for University of Ilesa, Nigeria.
+              across universities and countries.
             </p>
           </div>
 

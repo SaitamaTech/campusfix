@@ -27,7 +27,7 @@ export function IncidentReportForm({ categories, locations }: Props) {
       )}
       <Card highlighted>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "18px" }}>
-          <Camera size={20} color="#fb923c" />
+          <Camera size={20} color="var(--accent-highlight)" />
           <div>
             <h2 style={{ fontSize: "19px", fontWeight: 800 }}>Submit a campus incident</h2>
             <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>

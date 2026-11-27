@@ -77,7 +77,7 @@ export default async function ReportDetailPage({
               <h2 style={{ fontSize: "22px", fontWeight: 800 }}>{incident.title}</h2>
               <p className="mono" style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "5px" }}>{incident.reference_code}</p>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#86efac", fontWeight: 700 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--status-success)", fontWeight: 700 }}>
               <ShieldCheck size={17} />
               {Number(incident.confidence_score).toFixed(0)}% confidence
             </div>
@@ -133,7 +133,7 @@ export default async function ReportDetailPage({
 
         {incident.resolution_description && (
           <Card highlighted>
-            <h3 style={{ fontSize: "16px", marginBottom: "8px", color: "#86efac" }}>Resolution documented</h3>
+            <h3 style={{ fontSize: "16px", marginBottom: "8px", color: "var(--status-success)" }}>Resolution documented</h3>
             <p style={{ color: "var(--text-secondary)" }}>{incident.resolution_description}</p>
           </Card>
         )}

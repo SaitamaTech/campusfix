@@ -34,7 +34,7 @@ export default async function MyReportsPage() {
         {reports.length === 0 ? (
           <Card>
             <div style={{ textAlign: "center", padding: "30px" }}>
-              <FileText size={28} color="#6e7687" style={{ margin: "0 auto 10px" }} />
+              <FileText size={28} color="var(--text-muted)" style={{ margin: "0 auto 10px" }} />
               <p style={{ color: "var(--text-secondary)", marginBottom: "14px" }}>You have not submitted a report yet.</p>
               <Button href="/report" variant="primary" size="sm">Submit your first report</Button>
             </div>

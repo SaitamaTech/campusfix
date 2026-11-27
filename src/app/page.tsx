@@ -84,7 +84,7 @@ export default async function LandingPage() {
             <div>
               <div className={styles.eyebrow}>
                 <ShieldCheck size={15} />
-                Built for University of Ilesa &amp; Multi-Campus Adoption
+                Campus infrastructure, made accountable
               </div>
 
               <h1 className={styles.heroTitle}>
@@ -110,15 +110,15 @@ export default async function LandingPage() {
 
               <div className={styles.heroMetaRow}>
                 <span className={styles.heroMetaItem}>
-                  <CheckCircle2 size={15} color="#22c55e" />
+                  <CheckCircle2 size={15} color="var(--status-success)" />
                   Photographic evidence &amp; GPS optional
                 </span>
                 <span className={styles.heroMetaItem}>
-                  <Users size={15} color="#fb923c" />
+                  <Users size={15} color="var(--accent-highlight)" />
                   Community confidence scoring
                 </span>
                 <span className={styles.heroMetaItem}>
-                  <Activity size={15} color="#fda4af" />
+                  <Activity size={15} color="var(--accent-primary)" />
                   Audited status lifecycle
                 </span>
               </div>
@@ -133,7 +133,7 @@ export default async function LandingPage() {
                   </Badge>
                 </div>
                 <span className="mono" style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-                  CFX-UNILESA-PREVIEW
+                  CFX-SAMPLE-REPORT
                 </span>
               </div>
 
@@ -335,8 +335,8 @@ export default async function LandingPage() {
                   Multi-University Ready
                 </h3>
                 <p style={{ fontSize: "13.5px", color: "var(--text-secondary)" }}>
-                  Tenant-isolated architecture designed for University of Ilesa today and
-                  scalable across Nigerian institutions tomorrow.
+                  Built for independent campuses and ready to scale across universities
+                  and countries.
                 </p>
               </Card>
             </div>

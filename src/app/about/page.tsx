@@ -47,8 +47,8 @@ export default async function AboutPage() {
           </h1>
           <p style={{ fontSize: "16px", color: "var(--text-secondary)", lineHeight: 1.7 }}>
             CampusFix is a civic-technology and campus infrastructure reporting platform
-            designed initially with the University of Ilesa, Nigeria in mind, and
-            architected to scale across universities and tertiary institutions.
+            built to help university communities report infrastructure issues, track
+            resolutions, and hold maintenance workflows accountable.
           </p>
         </div>
 
@@ -61,7 +61,7 @@ export default async function AboutPage() {
           }}
         >
           <Card>
-            <Target size={22} color="#fda4af" style={{ marginBottom: "12px" }} />
+            <Target size={22} color="var(--accent-primary)" style={{ marginBottom: "12px" }} />
             <h2 style={{ fontSize: "17px", fontWeight: 700, marginBottom: "8px" }}>
               The Problem We Solve
             </h2>
@@ -73,7 +73,7 @@ export default async function AboutPage() {
           </Card>
 
           <Card>
-            <Compass size={22} color="#fdba74" style={{ marginBottom: "12px" }} />
+            <Compass size={22} color="var(--accent-highlight)" style={{ marginBottom: "12px" }} />
             <h2 style={{ fontSize: "17px", fontWeight: 700, marginBottom: "8px" }}>
               Our Solution
             </h2>
@@ -85,7 +85,7 @@ export default async function AboutPage() {
           </Card>
 
           <Card>
-            <ShieldCheck size={22} color="#86efac" style={{ marginBottom: "12px" }} />
+            <ShieldCheck size={22} color="var(--status-success)" style={{ marginBottom: "12px" }} />
             <h2 style={{ fontSize: "17px", fontWeight: 700, marginBottom: "8px" }}>
               Accountable Governance
             </h2>
@@ -96,7 +96,7 @@ export default async function AboutPage() {
           </Card>
 
           <Card>
-            <Building2 size={22} color="#7dd3fc" style={{ marginBottom: "12px" }} />
+            <Building2 size={22} color="var(--status-info)" style={{ marginBottom: "12px" }} />
             <h2 style={{ fontSize: "17px", fontWeight: 700, marginBottom: "8px" }}>
               Built for Multi-Campus Scale
             </h2>

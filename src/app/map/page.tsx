@@ -36,7 +36,7 @@ export default async function MapPage() {
         </Card>
         <Card>
           <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
-            <MapPin size={18} color="#fb923c" />
+            <MapPin size={18} color="var(--accent-highlight)" />
             <h2 style={{ fontSize: "16px" }}>Mapped reports</h2>
           </div>
           {incidents.length === 0 ? (

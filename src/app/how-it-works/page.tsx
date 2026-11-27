@@ -107,7 +107,7 @@ export default async function HowItWorksPage() {
 
         <Card highlighted>
           <div style={{ display: "flex", alignItems: "flex-start", gap: "14px" }}>
-            <AlertTriangle size={20} color="#fb923c" style={{ flexShrink: 0, marginTop: "3px" }} />
+            <AlertTriangle size={20} color="var(--status-warning)" style={{ flexShrink: 0, marginTop: "3px" }} />
             <div>
               <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "6px" }}>
                 Confidence Score vs. Severity

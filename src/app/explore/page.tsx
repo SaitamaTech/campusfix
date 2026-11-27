@@ -38,7 +38,7 @@ export default async function ExplorePage({
       <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
         <Card highlighted>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <Compass size={22} color="#fb923c" />
+            <Compass size={22} color="var(--accent-highlight)" />
             <div>
               <h2 style={{ fontSize: "19px", fontWeight: 800 }}>Community report board</h2>
               <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>

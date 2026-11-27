@@ -40,7 +40,7 @@ export default async function SuperAdminPage() {
       <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
         <Card highlighted>
           <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
-            <Globe size={22} color="#fb923c" />
+            <Globe size={22} color="var(--accent-highlight)" />
             <div>
               <h2 style={{ fontSize: "20px", fontWeight: 800 }}>
                 Multi-University Platform Governance
@@ -67,7 +67,7 @@ export default async function SuperAdminPage() {
               <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
                 Registered Universities
               </span>
-              <Building2 size={17} color="#fb923c" />
+              <Building2 size={17} color="var(--accent-primary)" />
             </div>
             <div className="mono" style={{ fontSize: "28px", fontWeight: 700 }}>
               {universitiesCount}
@@ -79,7 +79,7 @@ export default async function SuperAdminPage() {
               <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
                 Platform Accounts
               </span>
-              <Users size={17} color="#7dd3fc" />
+              <Users size={17} color="var(--status-info)" />
             </div>
             <div className="mono" style={{ fontSize: "28px", fontWeight: 700 }}>
               {profilesCount}
@@ -91,7 +91,7 @@ export default async function SuperAdminPage() {
               <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
                 Platform-Wide Incidents
               </span>
-              <FileText size={17} color="#fda4af" />
+              <FileText size={17} color="var(--accent-highlight)" />
             </div>
             <div className="mono" style={{ fontSize: "28px", fontWeight: 700 }}>
               {incidentsCount}

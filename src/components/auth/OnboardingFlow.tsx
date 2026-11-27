@@ -74,7 +74,7 @@ export function OnboardingFlow({
             justifyContent: "center",
             background: "var(--accent-primary-soft)",
             border: "1px solid var(--accent-primary-border)",
-            color: "#fda4af",
+            color: "var(--accent-primary)",
             flexShrink: 0,
           }}
         >
@@ -108,7 +108,7 @@ export function OnboardingFlow({
       >
         {current.points.map((pt) => (
           <div key={pt} style={{ display: "flex", alignItems: "flex-start", gap: "10px", fontSize: "13.5px" }}>
-            <CheckCircle2 size={16} color="#22c55e" style={{ flexShrink: 0, marginTop: "2px" }} />
+            <CheckCircle2 size={16} color="var(--status-success)" style={{ flexShrink: 0, marginTop: "2px" }} />
             <span>{pt}</span>
           </div>
         ))}

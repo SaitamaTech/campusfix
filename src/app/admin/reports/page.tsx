@@ -51,7 +51,7 @@ export default async function AdminReportsPage({
         {filters.error && <Alert variant="danger" title="Update failed">{filters.error}</Alert>}
         <Card highlighted>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <FileText size={20} color="#fb923c" />
+            <FileText size={20} color="var(--accent-highlight)" />
             <div>
               <h2 style={{ fontSize: "18px", fontWeight: 800 }}>Incident triage queue</h2>
               <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>Review, approve, assign, progress, or resolve reports.</p>

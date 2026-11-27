@@ -1,26 +1,35 @@
-import React from "react";
 import Link from "next/link";
 import {
-  PlusCircle,
-  MapPin,
-  FileText,
-  Compass,
-  CheckCircle2,
-  Clock,
-  AlertTriangle,
   Activity,
+  AlertTriangle,
+  ArrowUpRight,
+  CheckCircle2,
+  Clock3,
+  Compass,
+  FileText,
+  MapPin,
+  Plus,
 } from "lucide-react";
 import { requireAuthenticatedContext } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/layout/AppShell";
-import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Alert } from "@/components/ui/Alert";
+import styles from "./dashboard.module.css";
 
 export const metadata = {
   title: "Student Dashboard",
 };
+
+interface RecentReport {
+  id: string;
+  reference_code: string;
+  title: string;
+  status: string;
+  severity: string;
+  created_at: string;
+}
 
 export default async function StudentDashboardPage() {
   const ctx = await requireAuthenticatedContext();
@@ -32,49 +41,35 @@ export default async function StudentDashboardPage() {
   let awaitingActionReports = 0;
   let highPriorityCount = 0;
   let myReportsCount = 0;
-  let recentReports: Array<{
-    id: string;
-    reference_code: string;
-    title: string;
-    status: string;
-    severity: string;
-    created_at: string;
-  }> = [];
+  let recentReports: RecentReport[] = [];
+  let dataUnavailable = false;
 
   if (supabase && ctx.profile.university_id) {
-    const univId = ctx.profile.university_id;
-    const [
-      totalRes,
-      resolvedRes,
-      reviewRes,
-      awaitingRes,
-      highRes,
-      mineRes,
-      recentRes,
-    ] = await Promise.all([
+    const universityId = ctx.profile.university_id;
+    const results = await Promise.all([
       supabase
         .from("incidents")
         .select("id", { count: "exact", head: true })
-        .eq("university_id", univId),
+        .eq("university_id", universityId),
       supabase
         .from("incidents")
         .select("id", { count: "exact", head: true })
-        .eq("university_id", univId)
+        .eq("university_id", universityId)
         .eq("status", "resolved"),
       supabase
         .from("incidents")
         .select("id", { count: "exact", head: true })
-        .eq("university_id", univId)
+        .eq("university_id", universityId)
         .eq("status", "under_review"),
       supabase
         .from("incidents")
         .select("id", { count: "exact", head: true })
-        .eq("university_id", univId)
+        .eq("university_id", universityId)
         .in("status", ["submitted", "approved", "assigned"]),
       supabase
         .from("incidents")
         .select("id", { count: "exact", head: true })
-        .eq("university_id", univId)
+        .eq("university_id", universityId)
         .in("severity", ["high", "critical"])
         .neq("status", "resolved")
         .neq("status", "rejected"),
@@ -85,220 +80,205 @@ export default async function StudentDashboardPage() {
       supabase
         .from("incidents")
         .select("id, reference_code, title, status, severity, created_at")
-        .eq("university_id", univId)
+        .eq("university_id", universityId)
         .order("created_at", { ascending: false })
         .limit(5),
     ]);
 
-    totalCampusReports = totalRes.count ?? 0;
-    resolvedReports = resolvedRes.count ?? 0;
-    underReviewReports = reviewRes.count ?? 0;
-    awaitingActionReports = awaitingRes.count ?? 0;
-    highPriorityCount = highRes.count ?? 0;
-    myReportsCount = mineRes.count ?? 0;
-    recentReports = recentRes.data ?? [];
+    const [
+      totalResult,
+      resolvedResult,
+      reviewResult,
+      awaitingResult,
+      highPriorityResult,
+      myReportsResult,
+      recentResult,
+    ] = results;
+    const queryErrors = results.flatMap((result) => result.error ? [result.error] : []);
+    dataUnavailable = queryErrors.length > 0;
+    if (dataUnavailable) {
+      console.error("Campus dashboard data query failed:", queryErrors);
+    }
+
+    totalCampusReports = totalResult.count ?? 0;
+    resolvedReports = resolvedResult.count ?? 0;
+    underReviewReports = reviewResult.count ?? 0;
+    awaitingActionReports = awaitingResult.count ?? 0;
+    highPriorityCount = highPriorityResult.count ?? 0;
+    myReportsCount = myReportsResult.count ?? 0;
+    recentReports = recentResult.data ?? [];
   }
+
+  const firstName = ctx.profile.full_name.trim().split(/\s+/)[0] || "there";
 
   return (
     <AppShell
       profile={ctx.profile}
       university={ctx.university}
-      pageTitle="Student Dashboard"
+      pageTitle="Dashboard"
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+      <div className={styles.dashboard}>
         {!ctx.profile.onboarding_completed && (
-          <Alert variant="info" title="Complete your CampusFix orientation">
-            Learn how community verification, duplicate detection, and resolution
-            tracking work.{" "}
-            <Link
-              href="/onboarding"
-              style={{ fontWeight: 700, textDecoration: "underline" }}
-            >
-              Start quick walkthrough
+          <Alert variant="info" title="Finish setting up your account">
+            Get oriented with CampusFix so you can report issues and track what happens next.{" "}
+            <Link href="/onboarding" style={{ fontWeight: 650, textDecoration: "underline" }}>
+              Continue setup
             </Link>
           </Alert>
         )}
 
-        {/* Welcome & Quick Actions */}
-        <Card highlighted>
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: "16px",
-            }}
-          >
-            <div>
-              <Badge tone="orange" dot>
-                {ctx.university?.name ?? "Campus Workspace"}
-              </Badge>
-              <h2 style={{ fontSize: "22px", fontWeight: 800, marginTop: "10px" }}>
-                Welcome back, {ctx.profile.full_name}
-              </h2>
-              <p style={{ fontSize: "14px", color: "var(--text-secondary)", marginTop: "4px" }}>
-                {ctx.profile.department ?? "Student"} &bull;{" "}
-                {ctx.profile.faculty ?? "University Member"} &bull;{" "}
-                {ctx.profile.level ?? "Active"}
-              </p>
-            </div>
+        {!ctx.profile.university_id && (
+          <Alert variant="warning" title="Campus not linked to your account">
+            Your account needs to be connected to a campus before its reports and activity can appear. Contact your campus administrator.
+          </Alert>
+        )}
 
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-              <Button href="/report" variant="primary">
-                <PlusCircle size={16} />
-                Report a Problem
-              </Button>
-              <Button href="/map" variant="secondary">
-                <MapPin size={16} />
-                Explore Campus Map
-              </Button>
-              <Button href="/my-reports" variant="secondary">
-                <FileText size={16} />
-                View My Reports ({myReportsCount})
-              </Button>
-              <Button href="/explore" variant="ghost">
-                <Compass size={16} />
-                Community Reports
-              </Button>
+        {dataUnavailable && (
+          <Alert variant="warning" title="Some campus data could not be loaded">
+            You can still browse the workspace, but a few live metrics may be incomplete. Please refresh in a moment.
+          </Alert>
+        )}
+
+        <section className={styles.welcome}>
+          <div className={styles.welcomeCopy}>
+            <p className={styles.eyebrow}>Campus overview</p>
+            <h2 className={styles.welcomeTitle}>Welcome back, {firstName}.</h2>
+            <p className={styles.welcomeText}>
+              {ctx.university?.name
+                ? `Here is what is happening at ${ctx.university.name}. Spot an issue, share it with your community, and follow it through to resolution.`
+                : "Make campus issues visible, bring your community together, and follow progress through to resolution."}
+            </p>
+          </div>
+          <div className={styles.welcomeActions}>
+            <Button href="/report" variant="primary">
+              <Plus size={16} />
+              Report an issue
+            </Button>
+            <Button href="/explore" variant="secondary">
+              Explore campus
+              <ArrowUpRight size={15} />
+            </Button>
+          </div>
+        </section>
+
+        <section className={styles.metricGrid} aria-label="Campus report statistics">
+          <article className={styles.metricCard}>
+            <div className={styles.metricLabel}>
+              Campus reports <Activity size={17} color="var(--accent-primary)" />
+            </div>
+            <div className={styles.metricValue}>{totalCampusReports}</div>
+            <p className={styles.metricNote}>Shared with your university</p>
+          </article>
+          <article className={styles.metricCard}>
+            <div className={styles.metricLabel}>
+              Resolved <CheckCircle2 size={17} color="var(--status-success)" />
+            </div>
+            <div className={styles.metricValue}>{resolvedReports}</div>
+            <p className={styles.metricNote}>Documented campus fixes</p>
+          </article>
+          <article className={styles.metricCard}>
+            <div className={styles.metricLabel}>
+              Under review <Clock3 size={17} color="var(--status-warning)" />
+            </div>
+            <div className={styles.metricValue}>{underReviewReports}</div>
+            <p className={styles.metricNote}>Being assessed by the team</p>
+          </article>
+          <article className={styles.metricCard}>
+            <div className={styles.metricLabel}>
+              Needs attention <AlertTriangle size={17} color="var(--status-danger)" />
+            </div>
+            <div className={styles.metricValue}>{awaitingActionReports}</div>
+            <p className={styles.metricNote}>
+              {highPriorityCount} high-priority {highPriorityCount === 1 ? "issue" : "issues"}
+            </p>
+          </article>
+        </section>
+
+        <section className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <div>
+              <h3 className={styles.sectionTitle}>Get things moving</h3>
+              <p className={styles.sectionSubtitle}>Everything you need to make an impact on campus.</p>
             </div>
           </div>
-        </Card>
-
-        {/* Live Metrics from Database */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "16px",
-          }}
-        >
-          <Card>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
-              <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
-                Total Campus Reports
+          <div className={styles.actionGrid}>
+            <Link href="/report" className={styles.actionCard}>
+              <span className={styles.actionIcon}><Plus size={18} /></span>
+              <span>
+                <span className={styles.actionTitle}>Report an issue</span>
+                <span className={styles.actionDescription}>Share a problem with location and useful details.</span>
               </span>
-              <Activity size={17} color="#fda4af" />
-            </div>
-            <div className="mono" style={{ fontSize: "28px", fontWeight: 700 }}>
-              {totalCampusReports}
-            </div>
-          </Card>
-
-          <Card>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
-              <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
-                Resolved Reports
+            </Link>
+            <Link href="/explore" className={styles.actionCard}>
+              <span className={styles.actionIcon}><Compass size={18} /></span>
+              <span>
+                <span className={styles.actionTitle}>Explore reports</span>
+                <span className={styles.actionDescription}>See what your campus community is reporting.</span>
               </span>
-              <CheckCircle2 size={17} color="#22c55e" />
-            </div>
-            <div className="mono" style={{ fontSize: "28px", fontWeight: 700 }}>
-              {resolvedReports}
-            </div>
-          </Card>
-
-          <Card>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
-              <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
-                Under Review
+            </Link>
+            <Link href="/map" className={styles.actionCard}>
+              <span className={styles.actionIcon}><MapPin size={18} /></span>
+              <span>
+                <span className={styles.actionTitle}>Open campus map</span>
+                <span className={styles.actionDescription}>Find reports with shared location details.</span>
               </span>
-              <Clock size={17} color="#f59e0b" />
-            </div>
-            <div className="mono" style={{ fontSize: "28px", fontWeight: 700 }}>
-              {underReviewReports}
-            </div>
-          </Card>
+            </Link>
+          </div>
+        </section>
 
-          <Card>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
-              <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
-                Awaiting Action / High Priority
-              </span>
-              <AlertTriangle size={17} color="#fb923c" />
-            </div>
-            <div className="mono" style={{ fontSize: "28px", fontWeight: 700 }}>
-              {awaitingActionReports}{" "}
-              <span style={{ fontSize: "14px", color: "#fb923c" }}>
-                ({highPriorityCount} high)
-              </span>
-            </div>
-          </Card>
-        </div>
-
-        {/* Recent Campus Reports */}
-        <Card>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "16px",
-              gap: "12px",
-              flexWrap: "wrap",
-            }}
-          >
+        <section className={styles.section}>
+          <div className={styles.sectionHeader}>
             <div>
-              <h3 style={{ fontSize: "17px", fontWeight: 700 }}>
-                Recent Campus Activity
-              </h3>
-              <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
-                Latest reported incidents in {ctx.university?.short_name ?? "your campus"}.
+              <h3 className={styles.sectionTitle}>Recent campus activity</h3>
+              <p className={styles.sectionSubtitle}>
+                Latest reports from {ctx.university?.short_name ?? "your campus"}.
               </p>
             </div>
             <Button href="/explore" variant="ghost" size="sm">
-              Explore All
+              View all
+              <ArrowUpRight size={14} />
             </Button>
           </div>
 
           {recentReports.length === 0 ? (
-            <div
-              style={{
-                padding: "28px",
-                textAlign: "center",
-                borderRadius: "var(--radius-md)",
-                border: "1px dashed var(--border-default)",
-                color: "var(--text-secondary)",
-              }}
-            >
-              <p style={{ marginBottom: "12px", fontSize: "14px" }}>
-                No campus incidents have been submitted yet. Be the first to report an
-                issue that needs attention.
+            <div className={styles.emptyState}>
+              <FileText size={23} color="var(--text-muted)" style={{ margin: "0 auto 9px" }} />
+              <h4 className={styles.emptyTitle}>Your campus story starts here</h4>
+              <p className={styles.emptyText}>
+                No reports have been shared yet. Be the first to flag an issue and help your campus team act on it.
               </p>
               <Button href="/report" variant="primary" size="sm">
-                Submit First Report
+                <Plus size={15} />
+                Create the first report
               </Button>
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {recentReports.map((item) => (
+            <div className={styles.reportList}>
+              {recentReports.map((report) => (
                 <Link
-                  key={item.id}
-                  href={`/reports/${item.id}`}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    gap: "12px",
-                    padding: "12px 14px",
-                    borderRadius: "var(--radius-sm)",
-                    background: "var(--bg-surface)",
-                    border: "1px solid var(--border-subtle)",
-                  }}
+                  key={report.id}
+                  href={`/reports/${report.id}`}
+                  className={styles.reportRow}
                 >
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: "14.5px" }}>{item.title}</div>
-                    <div className="mono" style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-                      {item.reference_code} &bull; {item.severity.toUpperCase()}
-                    </div>
+                    <p className={styles.reportTitle}>{report.title}</p>
+                    <p className={styles.reportMeta}>
+                      {report.reference_code} · {report.severity.toUpperCase()} ·{" "}
+                      {new Date(report.created_at).toLocaleDateString()}
+                    </p>
                   </div>
-                  <Badge tone={item.status === "resolved" ? "success" : "orange"}>
-                    {item.status.replace("_", " ")}
+                  <Badge tone={report.status === "resolved" ? "success" : "info"}>
+                    {report.status.replace("_", " ")}
                   </Badge>
                 </Link>
               ))}
             </div>
           )}
-        </Card>
+        </section>
+
+        <div className={styles.metricNote}>
+          You have submitted {myReportsCount} {myReportsCount === 1 ? "report" : "reports"}.
+        </div>
       </div>
     </AppShell>
   );

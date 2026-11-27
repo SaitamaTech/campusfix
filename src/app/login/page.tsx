@@ -38,6 +38,11 @@ export default async function LoginPage({
       variant: "danger",
       message: "Email verification or reset link is invalid or expired. Please request a new one.",
     };
+  } else if (params.error === "profile_unavailable") {
+    initialAlert = {
+      variant: "danger",
+      message: "Your account profile could not be loaded. Please check the database setup or contact support.",
+    };
   } else if (params.error === "google_signin_failed") {
     initialAlert = {
       variant: "danger",

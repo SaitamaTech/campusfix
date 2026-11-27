@@ -78,13 +78,42 @@ export async function proxy(request: NextRequest) {
   }
 
   if (user && (isAuthPage || matchesPrefix(pathname, ["/admin", "/super-admin"]))) {
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("role, is_active, onboarding_completed")
       .eq("id", user.id)
       .single();
 
-    const role = (profile?.role as UserRole | undefined) ?? "student";
+    if (profileError || !profile) {
+      console.error("Could not load profile in proxy:", profileError);
+      if (
+        pathname === "/login" &&
+        request.nextUrl.searchParams.get("error") === "profile_unavailable"
+      ) {
+        return response;
+      }
+
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = "/login";
+      loginUrl.searchParams.set("error", "profile_unavailable");
+      return NextResponse.redirect(loginUrl);
+    }
+
+    if (!profile.is_active) {
+      if (
+        pathname === "/login" &&
+        request.nextUrl.searchParams.get("error") === "account_suspended"
+      ) {
+        return response;
+      }
+
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = "/login";
+      loginUrl.searchParams.set("error", "account_suspended");
+      return NextResponse.redirect(loginUrl);
+    }
+
+    const role = profile.role as UserRole;
 
     if (isAuthPage) {
       return NextResponse.redirect(new URL(getDefaultRouteForRole(role), request.url));

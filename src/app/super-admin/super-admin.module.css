@@ -1,0 +1,210 @@
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.heroCopy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.heroTitle {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.heroText,
+.sectionNote,
+.statNote,
+.accessText {
+  color: var(--text-secondary);
+  font-size: 13.5px;
+}
+
+.heroActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+  gap: 14px;
+}
+
+.statTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.statLabel {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.statValue {
+  font-size: 27px;
+  font-weight: 750;
+}
+
+.statNote {
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(260px, 0.9fr);
+  align-items: start;
+  gap: 16px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 750;
+}
+
+.sectionNote {
+  margin-top: 4px;
+  font-size: 12.5px;
+}
+
+.reportList {
+  display: flex;
+  flex-direction: column;
+}
+
+.reportRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.reportRow:hover .reportTitle {
+  color: var(--accent-primary);
+}
+
+.reportCopy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  gap: 6px;
+}
+
+.reportBadges {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.reportTitle {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 650;
+  transition: color var(--transition-fast);
+}
+
+.reportMeta {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.reportLinkIcon {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+}
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 9px;
+  min-height: 150px;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-align: center;
+}
+
+.sideColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.queueList {
+  display: flex;
+  flex-direction: column;
+}
+
+.queueLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.queueLink:hover {
+  color: var(--accent-primary);
+}
+
+.accessText {
+  margin-bottom: 15px;
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .heroActions {
+    width: 100%;
+  }
+
+  .heroActions > * {
+    flex: 1 1 auto;
+  }
+
+  .sectionHeader {
+    align-items: center;
+  }
+}

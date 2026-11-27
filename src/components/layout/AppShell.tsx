@@ -38,7 +38,7 @@ interface NavLinkItem {
 function getNavItemsForRole(role: UserRole): NavLinkItem[] {
   if (role === "super_admin") {
     return [
-      { href: "/super-admin", label: "Platform Console", icon: Globe },
+      { href: "/super-admin", label: "Platform Dashboard", icon: Globe },
       { href: "/admin", label: "Campus Operations", icon: Shield },
       { href: "/dashboard", label: "Student View", icon: LayoutDashboard },
       { href: "/map", label: "Campus Map", icon: MapPin },

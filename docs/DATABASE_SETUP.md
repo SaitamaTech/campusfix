@@ -1,0 +1,49 @@
+# CampusFix Database Setup Guide
+
+CampusFix uses **Supabase PostgreSQL**, **Supabase Auth**, and **Supabase Storage**.
+
+## 1. Create a Supabase Project
+
+1. Create a new project in the [Supabase Dashboard](https://supabase.com/dashboard).
+2. Copy your **Project URL**, **Anon Public Key**, and **Service Role Key** from **Project Settings -> API**.
+3. Create `.env.local` from `.env.example` and populate:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `NEXT_PUBLIC_APP_URL` (e.g. `http://localhost:3000` locally, or your Vercel domain in production)
+
+## 2. Run SQL Migrations
+
+Run the migration scripts in order inside the Supabase **SQL Editor** (or via `supabase db push` if using the Supabase CLI):
+
+1. `supabase/migrations/0001_initial_schema.sql` — Creates all 14 core tables (`universities`, `campus_settings`, `profiles`, `departments`, `campus_locations`, `incident_categories`, `incidents`, `incident_images`, `incident_verifications`, `incident_updates`, `incident_assignments`, `incident_flags`, `notifications`, `audit_logs`), foreign keys, constraints, and indexes.
+2. `supabase/migrations/0002_rls_policies.sql` — Enables Row Level Security on every table, creates role helper functions, creates the `handle_new_user()` auth trigger (hardcoding new registrations to `student`), guards sensitive profile columns against privilege escalation, and defines the `get_public_campus_stats` aggregate RPC.
+3. `supabase/migrations/0003_storage_and_seed.sql` — Creates the private `incident-evidence` storage bucket (5 MB max, JPEG/PNG/WebP), storage RLS policies, and initial seed data for **University of Ilesa (`unilesa`)**, 7 default departments, and 12 core incident categories.
+
+> **Important Note on Campus Coordinates:** No University of Ilesa GPS coordinates are invented or hardcoded. `campus_settings.map_configured` starts as `false` with `NULL` coordinates until an authorized administrator configures verified campus coordinates and boundaries.
+
+## 3. Configure Supabase Authentication
+
+In **Authentication -> URL Configuration**:
+
+- Set **Site URL** to `http://localhost:3000` (or your deployed URL).
+- Add **Redirect URLs**:
+  - `http://localhost:3000/auth/callback`
+  - `http://localhost:3000/auth/confirm`
+  - `http://localhost:3000/reset-password`
+  - (Plus your production Vercel URL equivalents)
+
+In **Authentication -> Providers -> Email**:
+- Ensure **Confirm email** is enabled for production student onboarding.
+
+## 4. Promote the First Super Administrator
+
+Public registration strictly creates `student` accounts and ignores any client-supplied role values. To promote an initial Super Administrator after they register and confirm their email, run in the Supabase SQL Editor:
+
+```sql
+UPDATE public.profiles
+SET role = 'super_admin'
+WHERE email = 'admin@unilesa.edu.ng';
+```
+
+From the Super Admin console, you can then create or promote Campus Administrators for specific universities.

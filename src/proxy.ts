@@ -13,6 +13,7 @@ const PROTECTED_PREFIXES = [
   "/map",
   "/my-reports",
   "/notifications",
+  "/announcements",
   "/profile",
   "/admin",
   "/super-admin",

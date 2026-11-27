@@ -13,9 +13,10 @@ import {
   UserCheck,
   Shield,
   Building2,
-  BarChart3,
+  Users,
   Settings,
   Globe,
+  Megaphone,
   LogOut,
   Menu,
   X,
@@ -39,9 +40,15 @@ function getNavItemsForRole(role: UserRole): NavLinkItem[] {
   if (role === "super_admin") {
     return [
       { href: "/super-admin", label: "Platform Dashboard", icon: Globe },
+      { href: "/super-admin/accounts", label: "Manage Accounts", icon: Users },
+      { href: "/super-admin/announcements", label: "Post Announcements", icon: Megaphone },
       { href: "/admin", label: "Campus Operations", icon: Shield },
+      { href: "/admin/departments", label: "Departments", icon: Building2 },
+      { href: "/admin/locations", label: "Campus Locations", icon: MapPin },
+      { href: "/admin/settings", label: "Campus Settings", icon: Settings },
       { href: "/dashboard", label: "Student View", icon: LayoutDashboard },
       { href: "/map", label: "Campus Map", icon: MapPin },
+      { href: "/announcements", label: "Announcements", icon: Megaphone },
       { href: "/notifications", label: "Notifications", icon: Bell },
       { href: "/profile", label: "Profile & Security", icon: Settings },
     ];
@@ -52,8 +59,10 @@ function getNavItemsForRole(role: UserRole): NavLinkItem[] {
       { href: "/admin", label: "Admin Dashboard", icon: Shield },
       { href: "/admin/reports", label: "Manage Reports", icon: FileText },
       { href: "/admin/departments", label: "Departments", icon: Building2 },
-      { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+      { href: "/admin/locations", label: "Campus Locations", icon: MapPin },
+      { href: "/admin/settings", label: "Campus Settings", icon: Settings },
       { href: "/map", label: "Campus Map", icon: MapPin },
+      { href: "/announcements", label: "Announcements", icon: Megaphone },
       { href: "/notifications", label: "Notifications", icon: Bell },
       { href: "/profile", label: "Profile & Settings", icon: Settings },
     ];
@@ -65,6 +74,7 @@ function getNavItemsForRole(role: UserRole): NavLinkItem[] {
     { href: "/explore", label: "Explore Reports", icon: Compass },
     { href: "/map", label: "Campus Map", icon: MapPin },
     { href: "/my-reports", label: "My Reports", icon: FileText },
+    { href: "/announcements", label: "Announcements", icon: Megaphone },
     { href: "/notifications", label: "Notifications", icon: Bell },
     { href: "/profile", label: "Profile & Settings", icon: UserCheck },
   ];
